@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TableProps } from "@/components/restaurant/Table";
 import { UserRound, Clock, DollarSign } from "lucide-react";
@@ -99,7 +98,7 @@ export function Dashboard({ tables, dailyTotal = 0 }: DashboardProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">${dailyTotal.toFixed(2)}</div>
+          <div className="text-2xl font-bold">L {dailyTotal.toFixed(2)}</div>
           <div className="text-xs text-muted-foreground mt-1">
             Total vendido hoy
           </div>
@@ -108,4 +107,3 @@ export function Dashboard({ tables, dailyTotal = 0 }: DashboardProps) {
     </div>
   );
 }
-

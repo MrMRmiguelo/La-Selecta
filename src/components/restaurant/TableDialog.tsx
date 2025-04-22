@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { 
   Dialog, 
@@ -197,7 +196,7 @@ export function TableDialog({
                         <span>x{fitem.quantity}</span>
                         <Button variant="ghost" size="sm" onClick={() => handleRemoveFood(fitem.itemId)}>Quitar</Button>
                         <span className="text-xs text-gray-500 ml-2">
-                          ${menuObj.price.toFixed(2)} c/u
+                          L {menuObj.price.toFixed(2)} c/u
                         </span>
                       </li>
                     ) : null;
@@ -229,7 +228,7 @@ export function TableDialog({
                   <Button variant="secondary" onClick={handleAddFood}>Añadir</Button>
                 </div>
                 <div className="text-right mt-2 font-semibold">
-                  Total: ${getFoodTotal().toFixed(2)}
+                  Total: L {getFoodTotal().toFixed(2)}
                 </div>
               </div>
             </>
@@ -244,4 +243,4 @@ export function TableDialog({
   );
 }
 
-// El archivo está siendo muy extenso (~221 líneas). Te recomiendo pedir refactorización para facilitar su mantenimiento.
+// El archivo está siendo muy extenso (~248 líneas). Te recomiendo pedir refactorización para facilitar su mantenimiento.
