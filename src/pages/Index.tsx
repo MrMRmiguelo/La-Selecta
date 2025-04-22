@@ -9,6 +9,7 @@ import { MenuItem, TableFoodItem } from "@/types/restaurant";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { AddTableDialog } from "@/components/restaurant/AddTableDialog";
 
 const DEFAULT_MENU: MenuItem[] = [
   { id: 1, name: "Milanesa", price: 7.5 },
@@ -39,10 +40,13 @@ const Index = () => {
   const [newDishName, setNewDishName] = useState("");
   const [newDishPrice, setNewDishPrice] = useState("");
 
-  // Nuevo: Estados para añadir mesas
-  const [newTableNumber, setNewTableNumber] = useState("");
-  const [newTableCapacity, setNewTableCapacity] = useState("");
-  const [newTableShape, setNewTableShape] = useState<"round" | "square" | "rect">("round");
+  // Nuevo: Estados para añadir mesas (ya no necesarios aquí)
+  // const [newTableNumber, setNewTableNumber] = useState("");
+  // const [newTableCapacity, setNewTableCapacity] = useState("");
+  // const [newTableShape, setNewTableShape] = useState<"round" | "square" | "rect">("round");
+
+  // Nuevo: Estado diálogo para añadir mesas
+  const [addTableOpen, setAddTableOpen] = useState(false);
 
   // Contabilidad diaria
   const [dailyTotal, setDailyTotal] = useState(0);
@@ -92,10 +96,8 @@ const Index = () => {
     );
   };
 
-  // Añadir nueva mesa
-  const handleAddTable = () => {
-    const number = parseInt(newTableNumber, 10);
-    const capacity = parseInt(newTableCapacity, 10);
+  // Nuevo: Agregar mesa (desde modal)
+  const handleAddTable = (number: number, capacity: number, shape: "round" | "square" | "rect") => {
     if (
       isNaN(number) ||
       isNaN(capacity) ||
@@ -113,12 +115,16 @@ const Index = () => {
         number,
         capacity,
         status: "free",
-        shape: newTableShape
+        shape
       }
     ]);
-    setNewTableNumber("");
-    setNewTableCapacity("");
-    setNewTableShape("round");
+  };
+
+  // Eliminar mesa
+  const handleDeleteTable = (tableId: number) => {
+    setTables(
+      tables.filter(t => t.id !== tableId)
+    );
   };
 
   return (
@@ -168,52 +174,14 @@ const Index = () => {
           </div>
         </section>
 
-        {/* NUEVO: Formulario para agregar mesas */}
-        <section className="mb-6">
-          <h2 className="text-lg font-semibold mb-2">Añadir Mesa</h2>
-          <div className="flex gap-2 flex-wrap items-center">
-            <Input
-              placeholder="Número de mesa"
-              value={newTableNumber}
-              onChange={e => setNewTableNumber(e.target.value.replace(/\D/, ""))}
-              className="w-32"
-              type="number"
-              min={1}
-            />
-            <Input
-              placeholder="Capacidad"
-              value={newTableCapacity}
-              onChange={e => setNewTableCapacity(e.target.value.replace(/\D/, ""))}
-              className="w-32"
-              type="number"
-              min={1}
-            />
-            <Select
-              value={newTableShape}
-              onValueChange={v => setNewTableShape(v as "round" | "square" | "rect")}
-            >
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Forma" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="round">Redonda</SelectItem>
-                <SelectItem value="square">Cuadrada</SelectItem>
-                <SelectItem value="rect">Rectangular</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button variant="secondary" onClick={handleAddTable}>Añadir Mesa</Button>
-          </div>
-          <div className="text-xs text-gray-500 mt-2">
-            El número de mesa no puede repetirse. La forma afecta cómo se representa en el plano.
-          </div>
-        </section>
-
         <Dashboard tables={tables} dailyTotal={dailyTotal} />
         
         <div className="mt-8">
           <FloorPlan 
             tables={tables} 
-            onTableSelect={handleTableSelect} 
+            onTableSelect={handleTableSelect}
+            onDeleteTable={handleDeleteTable}
+            onOpenAddTable={() => setAddTableOpen(true)}
           />
         </div>
       </div>
@@ -224,6 +192,12 @@ const Index = () => {
         onOpenChange={setDialogOpen}
         onUpdateTable={handleUpdateTable}
         menu={menu}
+      />
+
+      <AddTableDialog
+        open={addTableOpen}
+        onOpenChange={setAddTableOpen}
+        onAdd={handleAddTable}
       />
     </RestaurantLayout>
   );
