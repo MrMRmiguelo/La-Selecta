@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { RestaurantLayout } from "@/components/layout/RestaurantLayout";
 import { FloorPlan } from "@/components/restaurant/FloorPlan";
@@ -36,19 +35,11 @@ const Index = () => {
   ]);
   const [menu, setMenu] = useState<MenuItem[]>(DEFAULT_MENU);
 
-  // Estados para añadir nuevos platos al menú
   const [newDishName, setNewDishName] = useState("");
   const [newDishPrice, setNewDishPrice] = useState("");
 
-  // Nuevo: Estados para añadir mesas (ya no necesarios aquí)
-  // const [newTableNumber, setNewTableNumber] = useState("");
-  // const [newTableCapacity, setNewTableCapacity] = useState("");
-  // const [newTableShape, setNewTableShape] = useState<"round" | "square" | "rect">("round");
-
-  // Nuevo: Estado diálogo para añadir mesas
   const [addTableOpen, setAddTableOpen] = useState(false);
 
-  // Contabilidad diaria
   const [dailyTotal, setDailyTotal] = useState(0);
 
   const handleTableSelect = (tableId: number) => {
@@ -57,7 +48,6 @@ const Index = () => {
     setDialogOpen(true);
   };
 
-  // Actualizar mesa, sumar a contabilidad si corresponde
   const handleUpdateTable = (tableUpdate: Partial<TableProps>, totalToAccount?: number) => {
     setTables(tables.map(table => 
       table.id === tableUpdate.id ? { ...table, ...tableUpdate } : table
@@ -67,7 +57,6 @@ const Index = () => {
     }
   };
 
-  // Añadir plato nuevo al menú
   const handleAddMenuItem = () => {
     if (!newDishName.trim() || isNaN(Number(newDishPrice))) return;
     setMenu([
@@ -82,10 +71,8 @@ const Index = () => {
     setNewDishPrice("");
   };
 
-  // Eliminar plato del menú (sólo para la gestión manual)
   const handleRemoveMenuItem = (dishId: number) => {
     setMenu(menu.filter(item => item.id !== dishId));
-    // Además, elimina ese plato (si existe) de las mesas activas.
     setTables(
       tables.map(table => ({
         ...table,
@@ -96,7 +83,6 @@ const Index = () => {
     );
   };
 
-  // Nuevo: Agregar mesa (desde modal)
   const handleAddTable = (number: number, capacity: number, shape: "round" | "square" | "rect") => {
     if (
       isNaN(number) ||
@@ -105,7 +91,7 @@ const Index = () => {
       capacity <= 0 ||
       tables.some(t => t.number === number)
     ) {
-      return; // No permite datos inválidos o duplicados
+      return;
     }
     const newId = tables.length ? Math.max(...tables.map(t => t.id)) + 1 : 1;
     setTables([
@@ -120,7 +106,6 @@ const Index = () => {
     ]);
   };
 
-  // Eliminar mesa
   const handleDeleteTable = (tableId: number) => {
     setTables(
       tables.filter(t => t.id !== tableId)
@@ -191,6 +176,7 @@ const Index = () => {
         open={dialogOpen} 
         onOpenChange={setDialogOpen}
         onUpdateTable={handleUpdateTable}
+        onDeleteTable={handleDeleteTable}
         menu={menu}
       />
 
