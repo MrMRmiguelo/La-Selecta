@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { 
   Dialog, 
@@ -20,11 +21,15 @@ import {
 import { TableStatus, TableProps } from "@/components/restaurant/Table";
 import { TableCustomer, MenuItem, TableFoodItem } from "@/types/restaurant";
 
+// Nueva importación para el ícono de basura:
+import { Trash } from "lucide-react";
+
 interface TableDialogProps {
   table: TableProps | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onUpdateTable: (tableUpdate: Partial<TableProps>, totalToAccount?: number) => void;
+  onDeleteTable: (tableId: number) => void; // <---- NUEVA PROP
   menu: MenuItem[]; // <--- nuevo prop
 }
 
@@ -33,6 +38,7 @@ export function TableDialog({
   open, 
   onOpenChange,
   onUpdateTable,
+  onDeleteTable, // <--- recibida aquí
   menu = []
 }: TableDialogProps) {
   const [status, setStatus] = useState<TableStatus>(table?.status || "free");
@@ -96,6 +102,14 @@ export function TableDialog({
 
     onUpdateTable(update, totalVendido);
     onOpenChange(false);
+  };
+
+  // Nueva función para eliminar mesa
+  const handleDeleteTable = () => {
+    if (table && table.id) {
+      onDeleteTable(table.id);
+      onOpenChange(false);
+    }
   };
 
   // Añadir un plato a la mesa
@@ -235,7 +249,16 @@ export function TableDialog({
           )}
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex flex-row items-center justify-between gap-2">
+          <Button 
+            variant="destructive" 
+            onClick={handleDeleteTable}
+            className="flex items-center gap-2"
+            type="button"
+          >
+            <Trash size={18} />
+            Eliminar mesa
+          </Button>
           <Button onClick={handleSubmit}>Guardar</Button>
         </DialogFooter>
       </DialogContent>
@@ -244,3 +267,4 @@ export function TableDialog({
 }
 
 // El archivo está siendo muy extenso (~248 líneas). Te recomiendo pedir refactorización para facilitar su mantenimiento.
+
