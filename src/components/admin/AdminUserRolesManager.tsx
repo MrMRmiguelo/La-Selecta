@@ -2,15 +2,15 @@
 import { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
-import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/integrations/supabase/types";
 
 type UserWithRole = {
   id: string;
   email: string | null;
-  role: string;
+  role: Database["public"]["Enums"]["app_role"];
 };
 
 export function AdminUserRolesManager() {
@@ -18,7 +18,7 @@ export function AdminUserRolesManager() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const [saving, setSaving] = useState<{ [userId: string]: boolean }>({});
-  const [editedRoles, setEditedRoles] = useState<{ [userId: string]: string }>({});
+  const [editedRoles, setEditedRoles] = useState<{ [userId: string]: Database["public"]["Enums"]["app_role"] }>({});
 
   // Cargar todos los usuarios con su rol actual
   useEffect(() => {
@@ -54,7 +54,7 @@ export function AdminUserRolesManager() {
   }, [toast]);
 
   // Al seleccionar un rol diferente
-  const handleRoleChange = (userId: string, newRole: string) => {
+  const handleRoleChange = (userId: string, newRole: Database["public"]["Enums"]["app_role"]) => {
     setEditedRoles((prev) => ({ ...prev, [userId]: newRole }));
   };
 
@@ -125,7 +125,7 @@ export function AdminUserRolesManager() {
                   <select
                     className="border rounded px-2 py-1"
                     value={editedRoles[user.id] ?? user.role}
-                    onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                    onChange={(e) => handleRoleChange(user.id, e.target.value as Database["public"]["Enums"]["app_role"])}
                   >
                     <option value="normal">Normal</option>
                     <option value="admin">Admin</option>
