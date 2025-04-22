@@ -8,6 +8,7 @@ import { TableProps } from "@/components/restaurant/Table";
 import { MenuItem, TableFoodItem } from "@/types/restaurant";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
 const DEFAULT_MENU: MenuItem[] = [
   { id: 1, name: "Milanesa", price: 7.5 },
@@ -37,6 +38,11 @@ const Index = () => {
   // Estados para añadir nuevos platos al menú
   const [newDishName, setNewDishName] = useState("");
   const [newDishPrice, setNewDishPrice] = useState("");
+
+  // Nuevo: Estados para añadir mesas
+  const [newTableNumber, setNewTableNumber] = useState("");
+  const [newTableCapacity, setNewTableCapacity] = useState("");
+  const [newTableShape, setNewTableShape] = useState<"round" | "square" | "rect">("round");
 
   // Contabilidad diaria
   const [dailyTotal, setDailyTotal] = useState(0);
@@ -86,6 +92,35 @@ const Index = () => {
     );
   };
 
+  // Añadir nueva mesa
+  const handleAddTable = () => {
+    const number = parseInt(newTableNumber, 10);
+    const capacity = parseInt(newTableCapacity, 10);
+    if (
+      isNaN(number) ||
+      isNaN(capacity) ||
+      number <= 0 ||
+      capacity <= 0 ||
+      tables.some(t => t.number === number)
+    ) {
+      return; // No permite datos inválidos o duplicados
+    }
+    const newId = tables.length ? Math.max(...tables.map(t => t.id)) + 1 : 1;
+    setTables([
+      ...tables,
+      {
+        id: newId,
+        number,
+        capacity,
+        status: "free",
+        shape: newTableShape
+      }
+    ]);
+    setNewTableNumber("");
+    setNewTableCapacity("");
+    setNewTableShape("round");
+  };
+
   return (
     <RestaurantLayout>
       <div className="p-6 space-y-6">
@@ -109,7 +144,7 @@ const Index = () => {
           <div className="flex flex-wrap gap-2 mb-2">
             {menu.map((item) =>
               <span key={item.id} className="bg-gray-200 px-3 py-1 rounded text-sm flex items-center gap-2">
-                <span>{item.name} <span className="text-gray-500">(${item.price.toFixed(2)})</span></span>
+                <span>{item.name} <span className="text-gray-500">(L {item.price.toFixed(2)})</span></span>
                 <Button variant="ghost" size="sm" onClick={() => handleRemoveMenuItem(item.id)}>x</Button>
               </span>
             )}
@@ -130,6 +165,46 @@ const Index = () => {
               className="w-32"
             />
             <Button variant="secondary" onClick={handleAddMenuItem}>Añadir Plato</Button>
+          </div>
+        </section>
+
+        {/* NUEVO: Formulario para agregar mesas */}
+        <section className="mb-6">
+          <h2 className="text-lg font-semibold mb-2">Añadir Mesa</h2>
+          <div className="flex gap-2 flex-wrap items-center">
+            <Input
+              placeholder="Número de mesa"
+              value={newTableNumber}
+              onChange={e => setNewTableNumber(e.target.value.replace(/\D/, ""))}
+              className="w-32"
+              type="number"
+              min={1}
+            />
+            <Input
+              placeholder="Capacidad"
+              value={newTableCapacity}
+              onChange={e => setNewTableCapacity(e.target.value.replace(/\D/, ""))}
+              className="w-32"
+              type="number"
+              min={1}
+            />
+            <Select
+              value={newTableShape}
+              onValueChange={v => setNewTableShape(v as "round" | "square" | "rect")}
+            >
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="Forma" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="round">Redonda</SelectItem>
+                <SelectItem value="square">Cuadrada</SelectItem>
+                <SelectItem value="rect">Rectangular</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button variant="secondary" onClick={handleAddTable}>Añadir Mesa</Button>
+          </div>
+          <div className="text-xs text-gray-500 mt-2">
+            El número de mesa no puede repetirse. La forma afecta cómo se representa en el plano.
           </div>
         </section>
 
