@@ -1,13 +1,76 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { useState } from "react";
+import { RestaurantLayout } from "@/components/layout/RestaurantLayout";
+import { FloorPlan } from "@/components/restaurant/FloorPlan";
+import { Dashboard } from "@/components/restaurant/Dashboard";
+import { TableDialog } from "@/components/restaurant/TableDialog";
+import { TableProps } from "@/components/restaurant/Table";
 
 const Index = () => {
+  const [selectedTable, setSelectedTable] = useState<TableProps | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [tables, setTables] = useState<TableProps[]>([
+    { id: 1, number: 1, capacity: 2, status: "free", shape: "round" },
+    { id: 2, number: 2, capacity: 2, status: "free", shape: "round" },
+    { id: 3, number: 3, capacity: 4, status: "occupied", shape: "square", customer: { name: "Martínez", partySize: 3 }, occupiedAt: new Date(Date.now() - 30 * 60 * 1000) },
+    { id: 4, number: 4, capacity: 4, status: "occupied", shape: "square", customer: { name: "Rodríguez", partySize: 4 }, occupiedAt: new Date(Date.now() - 45 * 60 * 1000) },
+    { id: 5, number: 5, capacity: 6, status: "reserved", shape: "rect", customer: { name: "López", partySize: 5 } },
+    { id: 6, number: 6, capacity: 6, status: "free", shape: "rect" },
+    { id: 7, number: 7, capacity: 2, status: "free", shape: "round" },
+    { id: 8, number: 8, capacity: 2, status: "free", shape: "round" },
+    { id: 9, number: 9, capacity: 4, status: "free", shape: "square" },
+    { id: 10, number: 10, capacity: 4, status: "reserved", shape: "square", customer: { name: "Fernández", partySize: 4 } },
+    { id: 11, number: 11, capacity: 8, status: "occupied", shape: "rect", customer: { name: "González", partySize: 7 }, occupiedAt: new Date(Date.now() - 15 * 60 * 1000) },
+    { id: 12, number: 12, capacity: 8, status: "free", shape: "rect" },
+  ]);
+
+  const handleTableSelect = (tableId: number) => {
+    const table = tables.find(t => t.id === tableId) || null;
+    setSelectedTable(table);
+    setDialogOpen(true);
+  };
+
+  const handleUpdateTable = (tableUpdate: Partial<TableProps>) => {
+    setTables(tables.map(table => 
+      table.id === tableUpdate.id ? { ...table, ...tableUpdate } : table
+    ));
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+    <RestaurantLayout>
+      <div className="p-6 space-y-6">
+        <header className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">Restaurant Mesa Manager</h1>
+            <p className="text-gray-500">Gestiona fácilmente las mesas de tu restaurante</p>
+          </div>
+          <div className="text-sm text-gray-500">
+            {new Date().toLocaleDateString('es-ES', { 
+              weekday: 'long', 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            })}
+          </div>
+        </header>
+
+        <Dashboard tables={tables} />
+        
+        <div className="mt-8">
+          <FloorPlan 
+            tables={tables} 
+            onTableSelect={handleTableSelect} 
+          />
+        </div>
       </div>
-    </div>
+
+      <TableDialog 
+        table={selectedTable} 
+        open={dialogOpen} 
+        onOpenChange={setDialogOpen}
+        onUpdateTable={handleUpdateTable}
+      />
+    </RestaurantLayout>
   );
 };
 

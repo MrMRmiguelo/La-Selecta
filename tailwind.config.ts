@@ -52,6 +52,12 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				restaurant: {
+					free: '#10b981',      // verde para mesas libres
+					occupied: '#ef4444',  // rojo para mesas ocupadas
+					reserved: '#f59e0b',  // amarillo para mesas reservadas
+					accent: '#3b82f6'     // azul para acentos
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
