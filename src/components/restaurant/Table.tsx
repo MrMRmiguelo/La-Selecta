@@ -1,4 +1,4 @@
-import { useState } from "react";
+
 import { TableCustomer } from "@/types/restaurant";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -35,15 +35,15 @@ export function Table({
     ? Math.floor((new Date().getTime() - occupiedAt.getTime()) / (1000 * 60)) 
     : 0;
 
+  // Todas las mesas usan el mismo tamaño, solo varía el border-radius
   const tableClasses = cn(
-    "cursor-pointer relative flex flex-col items-center justify-center text-white font-medium transition-all duration-200 shadow-md hover:shadow-lg",
+    "cursor-pointer relative flex flex-col items-center justify-center text-white font-medium transition-all duration-200 shadow-md hover:shadow-lg h-24 w-24 aspect-square",
     {
       "bg-restaurant-free": status === "free",
       "bg-restaurant-occupied": status === "occupied",
       "bg-restaurant-reserved": status === "reserved",
-      "rounded-full aspect-square": shape === "round",
-      "rounded-lg aspect-square": shape === "square",
-      "rounded-lg h-24 w-32": shape === "rect"
+      "rounded-full": shape === "round",
+      "rounded-lg": shape === "square" || shape === "rect",
     }
   );
 
@@ -74,3 +74,4 @@ export function Table({
     </div>
   );
 }
+
