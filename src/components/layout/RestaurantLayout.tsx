@@ -1,74 +1,48 @@
-
-import { useState } from "react";
+import { ReactNode } from "react";
+import { createClient } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
-import { MoveHorizontal, Home, BarChart3, Settings } from "lucide-react";
 
-type RestaurantLayoutProps = {
-  children: React.ReactNode;
-};
+interface RestaurantLayoutProps {
+  children: ReactNode;
+}
 
-export function RestaurantLayout({ children }: RestaurantLayoutProps) {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL as string,
+  import.meta.env.VITE_SUPABASE_ANON_KEY as string
+);
+
+function LogoutButton() {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.href = "/login";
+  };
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
-      <div 
-        className={`bg-white shadow-md transition-all duration-300 flex flex-col ${
-          sidebarCollapsed ? "w-16" : "w-60"
-        }`}
-      >
-        <div className="p-4 flex items-center justify-between border-b">
-          {!sidebarCollapsed && (
-            <h1 className="text-xl font-bold text-restaurant-accent">RestaurantHub</h1>
-          )}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="ml-auto"
-          >
-            <MoveHorizontal size={20} />
-          </Button>
-        </div>
-        
-        <nav className="flex-1 p-2">
-          <ul className="space-y-2">
-            <li>
-              <Button 
-                variant="ghost" 
-                className={`w-full justify-start ${sidebarCollapsed ? "px-2" : "px-4"}`}
-              >
-                <Home size={20} />
-                {!sidebarCollapsed && <span className="ml-3">Inicio</span>}
-              </Button>
-            </li>
-            <li>
-              <Button 
-                variant="ghost" 
-                className={`w-full justify-start ${sidebarCollapsed ? "px-2" : "px-4"}`}
-              >
-                <BarChart3 size={20} />
-                {!sidebarCollapsed && <span className="ml-3">Estadísticas</span>}
-              </Button>
-            </li>
-            <li>
-              <Button 
-                variant="ghost" 
-                className={`w-full justify-start ${sidebarCollapsed ? "px-2" : "px-4"}`}
-              >
-                <Settings size={20} />
-                {!sidebarCollapsed && <span className="ml-3">Configuración</span>}
-              </Button>
-            </li>
-          </ul>
-        </nav>
-      </div>
-      
-      {/* Main Content */}
-      <div className="flex-1 overflow-auto">
-        {children}
-      </div>
-    </div>
+    <Button
+      onClick={handleLogout}
+      variant="outline"
+      className="ml-4"
+      title="Cerrar sesión"
+    >
+      Cerrar sesión
+    </Button>
   );
 }
+
+export const RestaurantLayout = ({ children }: RestaurantLayoutProps) => {
+  return (
+    <div className="min-h-screen bg-gray-100">
+      <header className="bg-white shadow">
+        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-900">Restaurant Manager</h1>
+          <LogoutButton />
+        </div>
+      </header>
+      <main>
+        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">{children}</div>
+      </main>
+    </div>
+  );
+};
+
+export { LogoutButton };
