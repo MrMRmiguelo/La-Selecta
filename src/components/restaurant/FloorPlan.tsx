@@ -1,15 +1,13 @@
-
 import { Table, TableProps } from "@/components/restaurant/Table";
-import { Trash, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 
 interface FloorPlanProps {
   tables: TableProps[];
   onTableSelect: (tableId: number) => void;
-  onDeleteTable: (tableId: number) => void;
   onOpenAddTable: () => void;
 }
 
-export function FloorPlan({ tables, onTableSelect, onDeleteTable, onOpenAddTable }: FloorPlanProps) {
+export function FloorPlan({ tables, onTableSelect, onOpenAddTable }: FloorPlanProps) {
   return (
     <div className="bg-gray-100 p-6 rounded-lg relative">
       <h2 className="text-xl font-bold mb-6 text-gray-700">Plano del Restaurante</h2>
@@ -25,19 +23,6 @@ export function FloorPlan({ tables, onTableSelect, onDeleteTable, onOpenAddTable
         {tables.map((table) => (
           <div key={table.id} className="relative flex items-center justify-center">
             <Table {...table} onClick={onTableSelect} />
-            {table.status === "free" && (
-              <button
-                title="Eliminar mesa"
-                onClick={e => {
-                  e.stopPropagation();
-                  onDeleteTable(table.id);
-                }}
-                className="absolute -top-2 -right-2 z-10 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition"
-                type="button"
-              >
-                <Trash size={16} />
-              </button>
-            )}
           </div>
         ))}
       </div>
