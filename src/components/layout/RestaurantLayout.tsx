@@ -6,7 +6,7 @@ import { SidebarProvider, Sidebar, SidebarContent, SidebarGroup,
   SidebarGroupLabel, SidebarGroupContent, SidebarMenu, 
   SidebarMenuItem, SidebarMenuButton, SidebarTrigger } from "@/components/ui/sidebar";
 import { Link } from "react-router-dom";
-import { Settings, Users } from "lucide-react";
+import { LayoutDashboard, Users, Settings } from "lucide-react";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 interface RestaurantLayoutProps {
@@ -68,7 +68,7 @@ function AppSidebar({ isAdmin }: { isAdmin: boolean }) {
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <Link to="/">
-                    <Settings />
+                    <LayoutDashboard />
                     <span>Dashboard</span>
                   </Link>
                 </SidebarMenuButton>
