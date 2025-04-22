@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { RestaurantLayout } from "@/components/layout/RestaurantLayout";
 import { FloorPlan } from "@/components/restaurant/FloorPlan";
@@ -10,6 +9,8 @@ import { AddTableDialog } from "@/components/restaurant/AddTableDialog";
 import { MenuManager } from "@/components/restaurant/MenuManager";
 import { useTables } from "@/hooks/useTables";
 import { useDailyTotal } from "@/hooks/useDailyTotal";
+import { AdminUserCreation } from "@/components/admin/AdminUserCreation";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 const DEFAULT_MENU: MenuItem[] = [
   { id: 1, name: "Milanesa", price: 7.5 },
@@ -37,6 +38,7 @@ const Index = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [menu, setMenu] = useState<MenuItem[]>(DEFAULT_MENU);
   const [addTableOpen, setAddTableOpen] = useState(false);
+  const isAdmin = useIsAdmin();
 
   const {
     tables,
@@ -77,6 +79,8 @@ const Index = () => {
   return (
     <RestaurantLayout>
       <div className="p-6 space-y-6">
+        {/* SOLO VISIBLE PARA ADMIN */}
+        {isAdmin && <AdminUserCreation />}
         <header className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-800">Restaurant Mesa Manager</h1>
