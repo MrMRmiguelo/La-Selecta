@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { TableCustomer } from "@/types/restaurant";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +5,8 @@ import { cn } from "@/lib/utils";
 import { UserRound, Clock } from "lucide-react";
 
 export type TableStatus = "free" | "occupied" | "reserved";
+
+import { MenuItem, TableFoodItem } from "@/types/restaurant";
 
 export interface TableProps {
   id: number;
@@ -16,6 +17,7 @@ export interface TableProps {
   occupiedAt?: Date;
   onClick?: (tableId: number) => void;
   shape?: "round" | "square" | "rect";
+  food?: TableFoodItem[];
 }
 
 export function Table({
@@ -26,14 +28,13 @@ export function Table({
   customer,
   occupiedAt,
   onClick,
-  shape = "round"
+  shape = "round",
+  food
 }: TableProps) {
-  // Calculate occupation time if relevant
   const occupationTime = occupiedAt 
     ? Math.floor((new Date().getTime() - occupiedAt.getTime()) / (1000 * 60)) 
     : 0;
 
-  // Dynamic classes based on status and shape
   const tableClasses = cn(
     "cursor-pointer relative flex flex-col items-center justify-center text-white font-medium transition-all duration-200 shadow-md hover:shadow-lg",
     {
