@@ -6,10 +6,11 @@ import { FloorPlanAddButton } from "./FloorPlanAddButton";
 interface FloorPlanProps {
   tables: TableProps[];
   onTableSelect: (tableId: number) => void;
+  onDeleteTable: (tableId: number) => void;
   onOpenAddTable: () => void;
 }
 
-export function FloorPlan({ tables, onTableSelect, onOpenAddTable }: FloorPlanProps) {
+export function FloorPlan({ tables, onTableSelect, onDeleteTable, onOpenAddTable }: FloorPlanProps) {
   return (
     <div className="bg-gray-100 p-6 rounded-lg relative">
       <h2 className="text-xl font-bold mb-6 text-gray-700">Plano del Restaurante</h2>
