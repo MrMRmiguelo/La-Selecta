@@ -1,12 +1,18 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createClient, Session } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL as string,
-  import.meta.env.VITE_SUPABASE_ANON_KEY as string
-);
+// Default fallback values for development (you'll need to set these in your environment)
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+
+// Check if the required environment variables are set
+if (!supabaseUrl || !supabaseKey) {
+  console.error("Supabase URL and Anon Key must be set in environment variables");
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export function RequireAuth({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
