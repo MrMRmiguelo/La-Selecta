@@ -20,17 +20,17 @@ import {
 } from "@/components/ui/select";
 import { TableStatus, TableProps } from "@/components/restaurant/Table";
 import { TableCustomer, MenuItem, TableFoodItem } from "@/types/restaurant";
-
-// Nueva importación para el ícono de basura:
 import { Trash } from "lucide-react";
+// Importar toast para la notificación visual:
+import { useToast } from "@/hooks/use-toast";
 
 interface TableDialogProps {
   table: TableProps | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onUpdateTable: (tableUpdate: Partial<TableProps>, totalToAccount?: number) => void;
-  onDeleteTable: (tableId: number) => void; // <---- NUEVA PROP
-  menu: MenuItem[]; // <--- nuevo prop
+  onDeleteTable: (tableId: number) => void;
+  menu: MenuItem[];
 }
 
 export function TableDialog({ 
@@ -38,19 +38,17 @@ export function TableDialog({
   open, 
   onOpenChange,
   onUpdateTable,
-  onDeleteTable, // <--- recibida aquí
+  onDeleteTable,
   menu = []
 }: TableDialogProps) {
+  const { toast } = useToast();
   const [status, setStatus] = useState<TableStatus>(table?.status || "free");
   const [customerName, setCustomerName] = useState(table?.customer?.name || "");
   const [partySize, setPartySize] = useState(table?.customer?.partySize || 1);
   const [food, setFood] = useState<TableFoodItem[]>(table?.food || []);
-
-  // Añadir plato temporalmente (en el formulario de la mesa)
   const [selectedMenuItem, setSelectedMenuItem] = useState<string>("");
   const [selectedQty, setSelectedQty] = useState<string>("1");
 
-  // Reset form when table changes
   useEffect(() => {
     if (table) {
       setStatus(table.status);
@@ -62,7 +60,6 @@ export function TableDialog({
 
   if (!table) return null;
 
-  // Calcular total
   const getFoodTotal = () => {
     return food.reduce((sum, fitem) => {
       const menuObj = menu.find(m => m.id === fitem.itemId);
@@ -104,7 +101,6 @@ export function TableDialog({
     onOpenChange(false);
   };
 
-  // Nueva función para eliminar mesa
   const handleDeleteTable = () => {
     if (table && table.id) {
       onDeleteTable(table.id);
@@ -117,7 +113,6 @@ export function TableDialog({
     const itemId = Number(selectedMenuItem);
     const quantity = Number(selectedQty);
     if (!itemId || !quantity) return;
-    // Si ya hay ese plato, suma cantidades
     const existing = food.find(f => f.itemId === itemId);
     if (existing) {
       setFood(
@@ -135,6 +130,25 @@ export function TableDialog({
   // Eliminar alimento de la lista consumida
   const handleRemoveFood = (itemId: number) => {
     setFood(food.filter(f => f.itemId !== itemId));
+  };
+
+  // ----------- NUEVA ACCIÓN: Pagar y liberar mesa -----------
+  const handlePayAndFree = () => {
+    const totalVendido = getFoodTotal();
+    const update: Partial<TableProps> = {
+      id: table?.id,
+      status: "free",
+      customer: undefined,
+      occupiedAt: undefined,
+      food: [],
+    };
+    onUpdateTable(update, totalVendido);
+    toast({
+      title: "Mesa liberada y pagada",
+      description: `Total registrado: L ${totalVendido.toFixed(2)}`,
+      variant: "default"
+    });
+    onOpenChange(false);
   };
 
   // ----------- UI ----------
@@ -244,6 +258,16 @@ export function TableDialog({
                 <div className="text-right mt-2 font-semibold">
                   Total: L {getFoodTotal().toFixed(2)}
                 </div>
+                {/* Mostrar botón Pagar SOLO si la mesa está ocupada y hay consumo */}
+                {(status === "occupied" && food.length > 0) && (
+                  <Button
+                    className="w-full mt-2"
+                    variant="default"
+                    onClick={handlePayAndFree}
+                  >
+                    Pagar y liberar mesa
+                  </Button>
+                )}
               </div>
             </>
           )}
@@ -266,5 +290,5 @@ export function TableDialog({
   );
 }
 
-// El archivo está siendo muy extenso (~248 líneas). Te recomiendo pedir refactorización para facilitar su mantenimiento.
+// El archivo está siendo muy extenso (~271 líneas). Te recomiendo pedir refactorización para facilitar su mantenimiento.
 
