@@ -38,16 +38,23 @@ const Index = () => {
   const [newDishName, setNewDishName] = useState("");
   const [newDishPrice, setNewDishPrice] = useState("");
 
+  // Contabilidad diaria
+  const [dailyTotal, setDailyTotal] = useState(0);
+
   const handleTableSelect = (tableId: number) => {
     const table = tables.find(t => t.id === tableId) || null;
     setSelectedTable(table);
     setDialogOpen(true);
   };
 
-  const handleUpdateTable = (tableUpdate: Partial<TableProps>) => {
+  // Actualizar mesa, sumar a contabilidad si corresponde
+  const handleUpdateTable = (tableUpdate: Partial<TableProps>, totalToAccount?: number) => {
     setTables(tables.map(table => 
       table.id === tableUpdate.id ? { ...table, ...tableUpdate } : table
     ));
+    if (totalToAccount && totalToAccount > 0) {
+      setDailyTotal(prev => prev + totalToAccount);
+    }
   };
 
   // Añadir plato nuevo al menú
@@ -126,7 +133,7 @@ const Index = () => {
           </div>
         </section>
 
-        <Dashboard tables={tables} />
+        <Dashboard tables={tables} dailyTotal={dailyTotal} />
         
         <div className="mt-8">
           <FloorPlan 

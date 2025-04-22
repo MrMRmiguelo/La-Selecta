@@ -1,13 +1,14 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TableProps } from "@/components/restaurant/Table";
-import { UserRound, Clock, Utensils, DollarSign } from "lucide-react";
+import { UserRound, Clock, DollarSign } from "lucide-react";
 
 interface DashboardProps {
   tables: TableProps[];
+  dailyTotal?: number;
 }
 
-export function Dashboard({ tables }: DashboardProps) {
+export function Dashboard({ tables, dailyTotal = 0 }: DashboardProps) {
   // Calculate stats
   const totalTables = tables.length;
   const occupiedTables = tables.filter(table => table.status === "occupied").length;
@@ -91,19 +92,20 @@ export function Dashboard({ tables }: DashboardProps) {
       </Card>
       
       <Card>
-        <CardHeader className="pb-2">
+        <CardHeader className="pb-2 flex flex-row gap-2">
           <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
-            <Clock className="mr-2" size={16} />
-            Tiempo Promedio
+            <DollarSign className="mr-2" size={16} />
+            Contabilidad del Día
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">45 min</div>
+          <div className="text-2xl font-bold">${dailyTotal.toFixed(2)}</div>
           <div className="text-xs text-muted-foreground mt-1">
-            Estancia por mesa
+            Total vendido hoy
           </div>
         </CardContent>
       </Card>
     </div>
   );
 }
+

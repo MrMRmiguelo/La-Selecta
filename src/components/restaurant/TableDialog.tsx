@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { 
   Dialog, 
   DialogContent, 
@@ -24,7 +25,7 @@ interface TableDialogProps {
   table: TableProps | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onUpdateTable: (tableUpdate: Partial<TableProps>) => void;
+  onUpdateTable: (tableUpdate: Partial<TableProps>, totalToAccount?: number) => void;
   menu: MenuItem[]; // <--- nuevo prop
 }
 
@@ -40,25 +41,36 @@ export function TableDialog({
   const [partySize, setPartySize] = useState(table?.customer?.partySize || 1);
   const [food, setFood] = useState<TableFoodItem[]>(table?.food || []);
 
-  // Para añadir plato temporalmente (en el formulario de la mesa)
+  // Añadir plato temporalmente (en el formulario de la mesa)
   const [selectedMenuItem, setSelectedMenuItem] = useState<string>("");
   const [selectedQty, setSelectedQty] = useState<string>("1");
 
   // Reset form when table changes
-  // !No hacer nada innecesario aquí: sólo efecto secundario real
-  if (table && table.id && table.id !== table?.id) {
-    setStatus(table.status);
-    setCustomerName(table.customer?.name || "");
-    setPartySize(table.customer?.partySize || 1);
-  }
+  useEffect(() => {
+    if (table) {
+      setStatus(table.status);
+      setCustomerName(table.customer?.name || "");
+      setPartySize(table.customer?.partySize || 1);
+      setFood(table.food || []);
+    }
+  }, [table]);
 
   if (!table) return null;
 
+  // Calcular total
+  const getFoodTotal = () => {
+    return food.reduce((sum, fitem) => {
+      const menuObj = menu.find(m => m.id === fitem.itemId);
+      return menuObj ? sum + menuObj.price * fitem.quantity : sum;
+    }, 0);
+  };
+
   const handleSubmit = () => {
+    let totalVendido = 0;
     const update: Partial<TableProps> = {
       id: table?.id,
       status,
-      food
+      food,
     };
 
     if (status === "occupied" || status === "reserved") {
@@ -70,14 +82,20 @@ export function TableDialog({
       
       if (status === "occupied") {
         update.occupiedAt = new Date();
+      } else {
+        update.occupiedAt = undefined;
       }
     } else {
+      // Si pasa de ocupada/reservada a libre, hacer contabilidad
+      if ((table.status === "occupied" || table.status === "reserved") && table.food && table.food.length > 0) {
+        totalVendido = getFoodTotal();
+      }
       update.customer = undefined;
       update.occupiedAt = undefined;
       update.food = [];
     }
 
-    onUpdateTable(update);
+    onUpdateTable(update, totalVendido);
     onOpenChange(false);
   };
 
@@ -106,6 +124,7 @@ export function TableDialog({
     setFood(food.filter(f => f.itemId !== itemId));
   };
 
+  // ----------- UI ----------
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
@@ -134,6 +153,25 @@ export function TableDialog({
             </Select>
           </div>
 
+          <div className="grid gap-2">
+            <Label htmlFor="partySize">Número de Personas</Label>
+            <Select 
+              value={partySize.toString()} 
+              onValueChange={(value) => setPartySize(parseInt(value))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar cantidad" />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: table.capacity }, (_, i) => i + 1).map((num) => (
+                  <SelectItem key={num} value={num.toString()}>
+                    {num}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           {(status === "occupied" || status === "reserved") && (
             <>
               <div className="grid gap-2">
@@ -144,25 +182,6 @@ export function TableDialog({
                   onChange={(e) => setCustomerName(e.target.value)}
                   placeholder="Nombre del cliente"
                 />
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="partySize">Número de Personas</Label>
-                <Select 
-                  value={partySize.toString()} 
-                  onValueChange={(value) => setPartySize(parseInt(value))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar cantidad" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Array.from({ length: table.capacity }, (_, i) => i + 1).map((num) => (
-                      <SelectItem key={num} value={num.toString()}>
-                        {num}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
 
               {/* Gestión de alimentación */}
@@ -177,6 +196,9 @@ export function TableDialog({
                         <span className="font-medium">{menuObj.name}</span>
                         <span>x{fitem.quantity}</span>
                         <Button variant="ghost" size="sm" onClick={() => handleRemoveFood(fitem.itemId)}>Quitar</Button>
+                        <span className="text-xs text-gray-500 ml-2">
+                          ${menuObj.price.toFixed(2)} c/u
+                        </span>
                       </li>
                     ) : null;
                   })}
@@ -206,6 +228,9 @@ export function TableDialog({
                   />
                   <Button variant="secondary" onClick={handleAddFood}>Añadir</Button>
                 </div>
+                <div className="text-right mt-2 font-semibold">
+                  Total: ${getFoodTotal().toFixed(2)}
+                </div>
               </div>
             </>
           )}
@@ -218,3 +243,5 @@ export function TableDialog({
     </Dialog>
   );
 }
+
+// El archivo está siendo muy extenso (~221 líneas). Te recomiendo pedir refactorización para facilitar su mantenimiento.
