@@ -10,6 +10,7 @@ import { MenuManager } from "@/components/restaurant/MenuManager";
 import { useTables } from "@/hooks/useTables";
 import { useDailyTotal } from "@/hooks/useDailyTotal";
 import { AdminUserCreation } from "@/components/admin/AdminUserCreation";
+import { AdminUserRolesManager } from "@/components/admin/AdminUserRolesManager";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 const DEFAULT_MENU: MenuItem[] = [
@@ -80,7 +81,10 @@ const Index = () => {
     <RestaurantLayout>
       <div className="p-6 space-y-6">
         {/* SOLO VISIBLE PARA ADMIN */}
-        {isAdmin && <AdminUserCreation />}
+        {isAdmin && <>
+          <AdminUserCreation />
+          <AdminUserRolesManager />
+        </>}
         <header className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-800">Restaurant Mesa Manager</h1>
