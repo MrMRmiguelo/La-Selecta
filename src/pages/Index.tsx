@@ -1,14 +1,15 @@
+
 import { useState } from "react";
 import { RestaurantLayout } from "@/components/layout/RestaurantLayout";
 import { FloorPlan } from "@/components/restaurant/FloorPlan";
 import { Dashboard } from "@/components/restaurant/Dashboard";
 import { TableDialog } from "@/components/restaurant/TableDialog";
 import { TableProps } from "@/components/restaurant/Table";
-import { MenuItem, TableFoodItem } from "@/types/restaurant";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { MenuItem } from "@/types/restaurant";
 import { AddTableDialog } from "@/components/restaurant/AddTableDialog";
+import { MenuManager } from "@/components/restaurant/MenuManager";
+import { useTables } from "@/hooks/useTables";
+import { useDailyTotal } from "@/hooks/useDailyTotal";
 
 const DEFAULT_MENU: MenuItem[] = [
   { id: 1, name: "Milanesa", price: 7.5 },
@@ -16,31 +17,37 @@ const DEFAULT_MENU: MenuItem[] = [
   { id: 3, name: "Pizza Margarita", price: 8.0 },
 ];
 
+const DEFAULT_TABLES: TableProps[] = [
+  { id: 1, number: 1, capacity: 2, status: "free", shape: "round" },
+  { id: 2, number: 2, capacity: 2, status: "free", shape: "round" },
+  { id: 3, number: 3, capacity: 4, status: "occupied", shape: "square", customer: { name: "Martínez", partySize: 3 }, occupiedAt: new Date(Date.now() - 30 * 60 * 1000), food: [] },
+  { id: 4, number: 4, capacity: 4, status: "occupied", shape: "square", customer: { name: "Rodríguez", partySize: 4 }, occupiedAt: new Date(Date.now() - 45 * 60 * 1000), food: [] },
+  { id: 5, number: 5, capacity: 6, status: "reserved", shape: "rect", customer: { name: "López", partySize: 5 }, food: [] },
+  { id: 6, number: 6, capacity: 6, status: "free", shape: "rect" },
+  { id: 7, number: 7, capacity: 2, status: "free", shape: "round" },
+  { id: 8, number: 8, capacity: 2, status: "free", shape: "round" },
+  { id: 9, number: 9, capacity: 4, status: "free", shape: "square" },
+  { id: 10, number: 10, capacity: 4, status: "reserved", shape: "square", customer: { name: "Fernández", partySize: 4 }, food: [] },
+  { id: 11, number: 11, capacity: 8, status: "occupied", shape: "rect", customer: { name: "González", partySize: 7 }, occupiedAt: new Date(Date.now() - 15 * 60 * 1000), food: [] },
+  { id: 12, number: 12, capacity: 8, status: "free", shape: "rect" },
+];
+
 const Index = () => {
   const [selectedTable, setSelectedTable] = useState<TableProps | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [tables, setTables] = useState<TableProps[]>([
-    { id: 1, number: 1, capacity: 2, status: "free", shape: "round" },
-    { id: 2, number: 2, capacity: 2, status: "free", shape: "round" },
-    { id: 3, number: 3, capacity: 4, status: "occupied", shape: "square", customer: { name: "Martínez", partySize: 3 }, occupiedAt: new Date(Date.now() - 30 * 60 * 1000), food: [] },
-    { id: 4, number: 4, capacity: 4, status: "occupied", shape: "square", customer: { name: "Rodríguez", partySize: 4 }, occupiedAt: new Date(Date.now() - 45 * 60 * 1000), food: [] },
-    { id: 5, number: 5, capacity: 6, status: "reserved", shape: "rect", customer: { name: "López", partySize: 5 }, food: [] },
-    { id: 6, number: 6, capacity: 6, status: "free", shape: "rect" },
-    { id: 7, number: 7, capacity: 2, status: "free", shape: "round" },
-    { id: 8, number: 8, capacity: 2, status: "free", shape: "round" },
-    { id: 9, number: 9, capacity: 4, status: "free", shape: "square" },
-    { id: 10, number: 10, capacity: 4, status: "reserved", shape: "square", customer: { name: "Fernández", partySize: 4 }, food: [] },
-    { id: 11, number: 11, capacity: 8, status: "occupied", shape: "rect", customer: { name: "González", partySize: 7 }, occupiedAt: new Date(Date.now() - 15 * 60 * 1000), food: [] },
-    { id: 12, number: 12, capacity: 8, status: "free", shape: "rect" },
-  ]);
   const [menu, setMenu] = useState<MenuItem[]>(DEFAULT_MENU);
-
-  const [newDishName, setNewDishName] = useState("");
-  const [newDishPrice, setNewDishPrice] = useState("");
-
   const [addTableOpen, setAddTableOpen] = useState(false);
 
-  const [dailyTotal, setDailyTotal] = useState(0);
+  const {
+    tables,
+    setTables,
+    updateTable,
+    addTable,
+    deleteTable,
+    removeMenuItemInTables,
+  } = useTables(DEFAULT_TABLES);
+
+  const { dailyTotal, addToDailyTotal } = useDailyTotal();
 
   const handleTableSelect = (tableId: number) => {
     const table = tables.find(t => t.id === tableId) || null;
@@ -49,67 +56,22 @@ const Index = () => {
   };
 
   const handleUpdateTable = (tableUpdate: Partial<TableProps>, totalToAccount?: number) => {
-    setTables(tables.map(table => 
-      table.id === tableUpdate.id ? { ...table, ...tableUpdate } : table
-    ));
+    updateTable(tableUpdate);
     if (totalToAccount && totalToAccount > 0) {
-      setDailyTotal(prev => prev + totalToAccount);
+      addToDailyTotal(totalToAccount);
     }
   };
 
-  const handleAddMenuItem = () => {
-    if (!newDishName.trim() || isNaN(Number(newDishPrice))) return;
-    setMenu([
-      ...menu,
-      {
-        id: menu.length ? Math.max(...menu.map(m => m.id)) + 1 : 1,
-        name: newDishName.trim(),
-        price: Number(newDishPrice)
-      }
-    ]);
-    setNewDishName("");
-    setNewDishPrice("");
+  const handleAddMenuItem = (item: Omit<MenuItem, "id">) => {
+    setMenu(menu => {
+      const nextId = menu.length ? Math.max(...menu.map(m => m.id)) + 1 : 1;
+      return [...menu, { ...item, id: nextId }];
+    });
   };
 
   const handleRemoveMenuItem = (dishId: number) => {
-    setMenu(menu.filter(item => item.id !== dishId));
-    setTables(
-      tables.map(table => ({
-        ...table,
-        food: table.food
-          ? table.food.filter(fitem => fitem.itemId !== dishId)
-          : table.food
-      }))
-    );
-  };
-
-  const handleAddTable = (number: number, capacity: number, shape: "round" | "square" | "rect") => {
-    if (
-      isNaN(number) ||
-      isNaN(capacity) ||
-      number <= 0 ||
-      capacity <= 0 ||
-      tables.some(t => t.number === number)
-    ) {
-      return;
-    }
-    const newId = tables.length ? Math.max(...tables.map(t => t.id)) + 1 : 1;
-    setTables([
-      ...tables,
-      {
-        id: newId,
-        number,
-        capacity,
-        status: "free",
-        shape
-      }
-    ]);
-  };
-
-  const handleDeleteTable = (tableId: number) => {
-    setTables(
-      tables.filter(t => t.id !== tableId)
-    );
+    setMenu(menu => menu.filter(item => item.id !== dishId));
+    removeMenuItemInTables(dishId);
   };
 
   return (
@@ -130,42 +92,19 @@ const Index = () => {
           </div>
         </header>
 
-        <section>
-          <h2 className="text-lg font-semibold mb-2">Menú del día</h2>
-          <div className="flex flex-wrap gap-2 mb-2">
-            {menu.map((item) =>
-              <span key={item.id} className="bg-gray-200 px-3 py-1 rounded text-sm flex items-center gap-2">
-                <span>{item.name} <span className="text-gray-500">(L {item.price.toFixed(2)})</span></span>
-                <Button variant="ghost" size="sm" onClick={() => handleRemoveMenuItem(item.id)}>x</Button>
-              </span>
-            )}
-          </div>
-          <div className="flex gap-2 mb-4">
-            <Input
-              placeholder="Nombre plato"
-              value={newDishName}
-              onChange={e => setNewDishName(e.target.value)}
-              className="w-44"
-            />
-            <Input
-              placeholder="Precio"
-              value={newDishPrice}
-              onChange={e => setNewDishPrice(e.target.value.replace(",", "."))}
-              type="number"
-              step="0.01"
-              className="w-32"
-            />
-            <Button variant="secondary" onClick={handleAddMenuItem}>Añadir Plato</Button>
-          </div>
-        </section>
+        <MenuManager
+          menu={menu}
+          onAddMenuItem={handleAddMenuItem}
+          onRemoveMenuItem={handleRemoveMenuItem}
+        />
 
         <Dashboard tables={tables} dailyTotal={dailyTotal} />
-        
+
         <div className="mt-8">
           <FloorPlan 
             tables={tables} 
             onTableSelect={handleTableSelect}
-            onDeleteTable={handleDeleteTable}
+            onDeleteTable={deleteTable}
             onOpenAddTable={() => setAddTableOpen(true)}
           />
         </div>
@@ -176,14 +115,14 @@ const Index = () => {
         open={dialogOpen} 
         onOpenChange={setDialogOpen}
         onUpdateTable={handleUpdateTable}
-        onDeleteTable={handleDeleteTable}
+        onDeleteTable={deleteTable}
         menu={menu}
       />
 
       <AddTableDialog
         open={addTableOpen}
         onOpenChange={setAddTableOpen}
-        onAdd={handleAddTable}
+        onAdd={addTable}
       />
     </RestaurantLayout>
   );
