@@ -17,32 +17,41 @@ export function AdminUserCreation() {
     e.preventDefault();
     setLoading(true);
 
-    const response = await fetch("/api/create-user", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({
-        email,
-        password: DEFAULT_PASSWORD,
-        role: "normal"
-      })
-    });
+    try {
+      // Llamar directamente a la función de Edge Function de Supabase
+      const { data, error } = await supabase.functions.invoke('create-user', {
+        body: {
+          email,
+          password: DEFAULT_PASSWORD,
+          role: "normal"
+        }
+      });
 
-    setLoading(false);
-    const result = await response.json();
-    if (result.error) {
+      if (error) {
+        toast({
+          title: "Error al crear usuario",
+          description: error.message,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Usuario creado correctamente",
+        description: `Usuario ${email} creado con rol normal. Contraseña inicial: ${DEFAULT_PASSWORD}`,
+        variant: "default"
+      });
+      setEmail("");
+    } catch (error) {
+      console.error("Error al crear usuario:", error);
       toast({
         title: "Error al crear usuario",
-        description: result.error,
+        description: "Ha ocurrido un error al crear el usuario",
         variant: "destructive"
       });
-      return;
+    } finally {
+      setLoading(false);
     }
-    toast({
-      title: "Usuario creado correctamente",
-      description: `Usuario ${email} creado con rol normal. Contraseña inicial: ${DEFAULT_PASSWORD}`,
-      variant: "default"
-    });
-    setEmail("");
   };
 
   return (
