@@ -5,7 +5,7 @@ import { SidebarProvider, Sidebar, SidebarContent, SidebarGroup,
   SidebarGroupLabel, SidebarGroupContent, SidebarMenu, 
   SidebarMenuItem, SidebarMenuButton, SidebarTrigger } from "@/components/ui/sidebar";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, Home } from "lucide-react";
+import { LayoutDashboard, Users, Home, Settings } from "lucide-react";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 interface RestaurantLayoutProps {
@@ -85,14 +85,24 @@ function AppSidebar({ isAdmin }: { isAdmin: boolean }) {
               </SidebarMenuItem>
               
               {isAdmin && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={location.pathname === "/admin"}>
-                    <Link to="/admin" className="w-full">
-                      <Users />
-                      <span>Gestión de Usuarios</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                <>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={location.pathname === "/admin"}>
+                      <Link to="/admin" className="w-full">
+                        <Settings />
+                        <span>Admin</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={location.pathname === "/admin"}>
+                      <Link to="/admin" className="w-full">
+                        <Users />
+                        <span>Gestión de Usuarios</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </>
               )}
             </SidebarMenu>
           </SidebarGroupContent>
