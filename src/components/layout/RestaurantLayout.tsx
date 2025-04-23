@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { SidebarProvider, Sidebar, SidebarContent, SidebarGroup, 
   SidebarGroupLabel, SidebarGroupContent, SidebarMenu, 
   SidebarMenuItem, SidebarMenuButton, SidebarTrigger } from "@/components/ui/sidebar";
-import { Link } from "react-router-dom";
-import { LayoutDashboard, Users, Settings } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { LayoutDashboard, Users } from "lucide-react";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 interface RestaurantLayoutProps {
@@ -58,6 +58,8 @@ export const RestaurantLayout = ({ children }: RestaurantLayoutProps) => {
 };
 
 function AppSidebar({ isAdmin }: { isAdmin: boolean }) {
+  const location = useLocation();
+
   return (
     <Sidebar>
       <SidebarContent>
@@ -67,7 +69,7 @@ function AppSidebar({ isAdmin }: { isAdmin: boolean }) {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link to="/">
+                  <Link to="/" className="w-full">
                     <LayoutDashboard />
                     <span>Dashboard</span>
                   </Link>
@@ -76,8 +78,8 @@ function AppSidebar({ isAdmin }: { isAdmin: boolean }) {
               
               {isAdmin && (
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <Link to="/admin">
+                  <SidebarMenuButton asChild isActive={location.pathname === "/admin"}>
+                    <Link to="/admin" className="w-full">
                       <Users />
                       <span>Gestión de Usuarios</span>
                     </Link>
