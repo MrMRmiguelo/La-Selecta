@@ -68,7 +68,7 @@ function AppSidebar({ isAdmin }: { isAdmin: boolean }) {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild isActive={location.pathname === "/"}>
                   <Link to="/" className="w-full">
                     <LayoutDashboard />
                     <span>Dashboard</span>
