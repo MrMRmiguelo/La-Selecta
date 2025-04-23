@@ -30,6 +30,39 @@ export type Database = {
         }
         Relationships: []
       }
+      orders: {
+        Row: {
+          created_at: string
+          details: Json
+          id: string
+          kitchen_notes: string | null
+          status: Database["public"]["Enums"]["order_status"]
+          table_id: number
+          updated_at: string
+          waiter_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          details?: Json
+          id?: string
+          kitchen_notes?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+          table_id: number
+          updated_at?: string
+          waiter_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          details?: Json
+          id?: string
+          kitchen_notes?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+          table_id?: number
+          updated_at?: string
+          waiter_id?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -63,6 +96,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "normal"
+      order_status: "pending" | "in_progress" | "completed" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -179,6 +213,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "normal"],
+      order_status: ["pending", "in_progress", "completed", "cancelled"],
     },
   },
 } as const
