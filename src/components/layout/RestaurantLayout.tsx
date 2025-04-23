@@ -1,4 +1,3 @@
-
 import { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,7 @@ import { SidebarProvider, Sidebar, SidebarContent, SidebarGroup,
   SidebarGroupLabel, SidebarGroupContent, SidebarMenu, 
   SidebarMenuItem, SidebarMenuButton, SidebarTrigger } from "@/components/ui/sidebar";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users } from "lucide-react";
+import { LayoutDashboard, Users, Home } from "lucide-react";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 interface RestaurantLayoutProps {
@@ -70,6 +69,15 @@ function AppSidebar({ isAdmin }: { isAdmin: boolean }) {
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={location.pathname === "/"}>
                   <Link to="/" className="w-full">
+                    <Home />
+                    <span>Inicio</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={location.pathname === "/dashboard"}>
+                  <Link to="/dashboard" className="w-full">
                     <LayoutDashboard />
                     <span>Dashboard</span>
                   </Link>
