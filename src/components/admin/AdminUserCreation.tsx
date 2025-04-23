@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-const DEFAULT_PASSWORD = "CambiaEsta123!"; // Por seguridad, notificar que debe cambiarla tras el primer login
+const DEFAULT_PASSWORD = "Selecta123"; // Contraseña inicial para nuevos usuarios
 
 export function AdminUserCreation() {
   const [email, setEmail] = useState("");
@@ -17,7 +17,6 @@ export function AdminUserCreation() {
     e.preventDefault();
     setLoading(true);
 
-    // 1. Crear usuario desde el backend (supabase.auth.admin.createUser está solo disponible vía server, por eso usamos edge function)
     const response = await fetch("/api/create-user", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
