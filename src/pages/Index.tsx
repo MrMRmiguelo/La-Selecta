@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { RestaurantLayout } from "@/components/layout/RestaurantLayout";
 import { FloorPlan } from "@/components/restaurant/FloorPlan";
@@ -8,7 +7,6 @@ import { TableProps } from "@/components/restaurant/Table";
 import { MenuItem } from "@/types/restaurant";
 import { AddTableDialog } from "@/components/restaurant/AddTableDialog";
 import { MenuManager } from "@/components/restaurant/MenuManager";
-import { MonthlyAccounting } from "@/components/restaurant/MonthlyAccounting";
 import { useTables } from "@/hooks/useTables";
 import { useDailyTotal } from "@/hooks/useDailyTotal";
 
@@ -100,8 +98,6 @@ const Index = () => {
         />
 
         <Dashboard tables={tables} dailyTotal={dailyTotal} />
-
-        <MonthlyAccounting />
 
         <div className="mt-8">
           <FloorPlan 

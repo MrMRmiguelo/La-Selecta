@@ -5,7 +5,7 @@ import { SidebarProvider, Sidebar, SidebarContent, SidebarGroup,
   SidebarGroupLabel, SidebarGroupContent, SidebarMenu, 
   SidebarMenuItem, SidebarMenuButton, SidebarTrigger } from "@/components/ui/sidebar";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, Home, Settings } from "lucide-react";
+import { LayoutDashboard, Users, Home, Settings, CoinsIcon } from "lucide-react";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 interface RestaurantLayoutProps {
@@ -80,6 +80,15 @@ function AppSidebar({ isAdmin }: { isAdmin: boolean }) {
                   <Link to="/dashboard" className="w-full">
                     <LayoutDashboard />
                     <span>Dashboard</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={location.pathname === "/monthly-accounting"}>
+                  <Link to="/monthly-accounting" className="w-full">
+                    <CoinsIcon />
+                    <span>Contabilidad</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

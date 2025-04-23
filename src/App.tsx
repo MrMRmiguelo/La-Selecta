@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,6 +8,7 @@ import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Admin from "./pages/Admin";
 import { RequireAuth } from "./components/auth/RequireAuth";
+import MonthlyAccountingPage from "./pages/MonthlyAccountingPage";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +28,7 @@ const App = () => (
                   <Route path="/" element={<Index />} />
                   <Route path="/dashboard" element={<Index />} />
                   <Route path="/admin" element={<Admin />} />
+                  <Route path="/monthly-accounting" element={<MonthlyAccountingPage />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </RequireAuth>
