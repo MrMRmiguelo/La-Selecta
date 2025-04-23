@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { 
   Dialog, 
@@ -21,8 +20,8 @@ import {
 import { TableStatus, TableProps } from "@/components/restaurant/Table";
 import { TableCustomer, MenuItem, TableFoodItem } from "@/types/restaurant";
 import { Trash } from "lucide-react";
-// Importar toast para la notificación visual:
 import { useToast } from "@/hooks/use-toast";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 interface TableDialogProps {
   table: TableProps | null;
@@ -42,6 +41,7 @@ export function TableDialog({
   menu = []
 }: TableDialogProps) {
   const { toast } = useToast();
+  const isAdmin = useIsAdmin();
   const [status, setStatus] = useState<TableStatus>(table?.status || "free");
   const [customerName, setCustomerName] = useState(table?.customer?.name || "");
   const [partySize, setPartySize] = useState(table?.customer?.partySize || 1);
@@ -88,7 +88,6 @@ export function TableDialog({
         update.occupiedAt = undefined;
       }
     } else {
-      // Si pasa de ocupada/reservada a libre, hacer contabilidad
       if ((table.status === "occupied" || table.status === "reserved") && table.food && table.food.length > 0) {
         totalVendido = getFoodTotal();
       }
@@ -108,7 +107,6 @@ export function TableDialog({
     }
   };
 
-  // Añadir un plato a la mesa
   const handleAddFood = () => {
     const itemId = Number(selectedMenuItem);
     const quantity = Number(selectedQty);
@@ -127,12 +125,10 @@ export function TableDialog({
     setSelectedQty("1");
   };
 
-  // Eliminar alimento de la lista consumida
   const handleRemoveFood = (itemId: number) => {
     setFood(food.filter(f => f.itemId !== itemId));
   };
 
-  // ----------- NUEVA ACCIÓN: Pagar y liberar mesa -----------
   const handlePayAndFree = () => {
     const totalVendido = getFoodTotal();
     const update: Partial<TableProps> = {
@@ -151,7 +147,6 @@ export function TableDialog({
     onOpenChange(false);
   };
 
-  // ----------- UI ----------
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
@@ -211,7 +206,6 @@ export function TableDialog({
                 />
               </div>
 
-              {/* Gestión de alimentación */}
               <div>
                 <Label>Alimentos Consumidos</Label>
                 <ul className="mb-2">
@@ -258,7 +252,6 @@ export function TableDialog({
                 <div className="text-right mt-2 font-semibold">
                   Total: L {getFoodTotal().toFixed(2)}
                 </div>
-                {/* Mostrar botón Pagar SOLO si la mesa está ocupada y hay consumo */}
                 {(status === "occupied" && food.length > 0) && (
                   <Button
                     className="w-full mt-2"
@@ -289,6 +282,3 @@ export function TableDialog({
     </Dialog>
   );
 }
-
-// El archivo está siendo muy extenso (~271 líneas). Te recomiendo pedir refactorización para facilitar su mantenimiento.
-

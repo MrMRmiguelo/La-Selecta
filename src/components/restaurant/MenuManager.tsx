@@ -3,6 +3,7 @@ import { useState } from "react";
 import { MenuItem } from "@/types/restaurant";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 interface MenuManagerProps {
   menu: MenuItem[];
@@ -13,6 +14,7 @@ interface MenuManagerProps {
 export function MenuManager({ menu, onAddMenuItem, onRemoveMenuItem }: MenuManagerProps) {
   const [newDishName, setNewDishName] = useState("");
   const [newDishPrice, setNewDishPrice] = useState("");
+  const isAdmin = useIsAdmin();
 
   const handleAdd = () => {
     if (!newDishName.trim() || isNaN(Number(newDishPrice))) return;
@@ -28,27 +30,31 @@ export function MenuManager({ menu, onAddMenuItem, onRemoveMenuItem }: MenuManag
         {menu.map((item) =>
           <span key={item.id} className="bg-gray-200 px-3 py-1 rounded text-sm flex items-center gap-2">
             <span>{item.name} <span className="text-gray-500">(L {item.price.toFixed(2)})</span></span>
-            <Button variant="ghost" size="sm" onClick={() => onRemoveMenuItem(item.id)}>x</Button>
+            {isAdmin && (
+              <Button variant="ghost" size="sm" onClick={() => onRemoveMenuItem(item.id)}>x</Button>
+            )}
           </span>
         )}
       </div>
-      <div className="flex gap-2 mb-4">
-        <Input
-          placeholder="Nombre plato"
-          value={newDishName}
-          onChange={e => setNewDishName(e.target.value)}
-          className="w-44"
-        />
-        <Input
-          placeholder="Precio"
-          value={newDishPrice}
-          onChange={e => setNewDishPrice(e.target.value.replace(",", "."))}
-          type="number"
-          step="0.01"
-          className="w-32"
-        />
-        <Button variant="secondary" onClick={handleAdd}>Añadir Plato</Button>
-      </div>
+      {isAdmin && (
+        <div className="flex gap-2 mb-4">
+          <Input
+            placeholder="Nombre plato"
+            value={newDishName}
+            onChange={e => setNewDishName(e.target.value)}
+            className="w-44"
+          />
+          <Input
+            placeholder="Precio"
+            value={newDishPrice}
+            onChange={e => setNewDishPrice(e.target.value.replace(",", "."))}
+            type="number"
+            step="0.01"
+            className="w-32"
+          />
+          <Button variant="secondary" onClick={handleAdd}>Añadir Plato</Button>
+        </div>
+      )}
     </section>
   );
 }
