@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import Admin from "./pages/Admin";
 import { RequireAuth } from "./components/auth/RequireAuth";
 import MonthlyAccountingPage from "./pages/MonthlyAccountingPage";
+import SodaInventoryPage from "./pages/SodaInventory";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ const App = () => (
                   <Route path="/dashboard" element={<Index />} />
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/monthly-accounting" element={<MonthlyAccountingPage />} />
+                  <Route path="/soda-inventory" element={<SodaInventoryPage />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </RequireAuth>
