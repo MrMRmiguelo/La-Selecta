@@ -1,9 +1,24 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 
 export function useDailyTotal() {
   const [dailyTotal, setDailyTotal] = useState(0);
+
+  useEffect(() => {
+    const fetchTodayTotal = async () => {
+      const today = new Date().toISOString().split('T')[0];
+      const { data, error } = await supabase
+        .from('daily_totals')
+        .select('total')
+        .eq('date', today)
+        .single();
+      if (!error && data && typeof data.total === 'number') {
+        setDailyTotal(data.total);
+      }
+    };
+    fetchTodayTotal();
+  }, []);
 
   const addToDailyTotal = async (amount: number) => {
     const newTotal = dailyTotal + amount;

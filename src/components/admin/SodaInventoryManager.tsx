@@ -20,7 +20,6 @@ export function SodaInventoryManager() {
   const [currentSoda, setCurrentSoda] = useState<SodaInventory | null>(null);
   const [formData, setFormData] = useState<SodaInventoryInsert>({
     name: "",
-    brand: "",
     quantity: 0,
     price: 0
   });
@@ -63,6 +62,31 @@ export function SodaInventoryManager() {
 
   // Agregar nueva bebida
   const handleAddSoda = async () => {
+    // Validación de campos
+    if (!formData.name || formData.name.trim() === "") {
+      toast({
+        title: "Nombre requerido",
+        description: "Por favor ingresa el nombre de la bebida.",
+        variant: "destructive"
+      });
+      return;
+    }
+    if (formData.quantity == null || isNaN(formData.quantity) || formData.quantity < 0) {
+      toast({
+        title: "Cantidad inválida",
+        description: "Por favor ingresa una cantidad válida (mayor o igual a 0).",
+        variant: "destructive"
+      });
+      return;
+    }
+    if (formData.price == null || isNaN(formData.price) || formData.price < 0) {
+      toast({
+        title: "Precio inválido",
+        description: "Por favor ingresa un precio válido (mayor o igual a 0).",
+        variant: "destructive"
+      });
+      return;
+    }
     const { error } = await supabase
       .from("soda_inventory")
       .insert(formData);
@@ -87,18 +111,46 @@ export function SodaInventoryManager() {
   // Editar bebida existente
   const handleEditSoda = async () => {
     if (!currentSoda) return;
-
-    const updates: SodaInventoryUpdate = {};
-    if (formData.name !== currentSoda.name) updates.name = formData.name;
-    if (formData.brand !== currentSoda.brand) updates.brand = formData.brand;
-    if (formData.quantity !== currentSoda.quantity) updates.quantity = formData.quantity;
-    if (formData.price !== currentSoda.price) updates.price = formData.price;
-
+    // Logs temporales para depuración
+    console.log("[DEBUG] updates:", formData);
+    console.log("[DEBUG] currentSoda.id:", currentSoda.id);
+    // Validación de campos
+    if (!formData.name || formData.name.trim() === "") {
+      toast({
+        title: "Nombre requerido",
+        description: "Por favor ingresa el nombre de la bebida.",
+        variant: "destructive"
+      });
+      return;
+    }
+    if (formData.quantity == null || isNaN(formData.quantity) || formData.quantity < 0) {
+      toast({
+        title: "Cantidad inválida",
+        description: "Por favor ingresa una cantidad válida (mayor o igual a 0).",
+        variant: "destructive"
+      });
+      return;
+    }
+    if (formData.price == null || isNaN(formData.price) || formData.price < 0) {
+      toast({
+        title: "Precio inválido",
+        description: "Por favor ingresa un precio válido (mayor o igual a 0).",
+        variant: "destructive"
+      });
+      return;
+    }
+    // Siempre incluir el campo price en la actualización
+    const updates: SodaInventoryUpdate = {
+      name: formData.name,
+      quantity: formData.quantity,
+      price: formData.price
+    };
+    // Log para verificar el objeto updates
+    console.log("[DEBUG] updates enviados:", updates);
     const { error } = await supabase
       .from("soda_inventory")
       .update(updates)
       .eq("id", currentSoda.id);
-
     if (error) {
       toast({
         title: "Error al actualizar bebida",
@@ -145,7 +197,6 @@ export function SodaInventoryManager() {
     setCurrentSoda(soda);
     setFormData({
       name: soda.name,
-      brand: soda.brand,
       quantity: soda.quantity,
       price: soda.price
     });
@@ -156,7 +207,6 @@ export function SodaInventoryManager() {
   const resetForm = () => {
     setFormData({
       name: "",
-      brand: "",
       quantity: 0,
       price: 0
     });
@@ -174,7 +224,6 @@ export function SodaInventoryManager() {
           <TableHeader>
             <TableRow>
               <TableHead>Nombre</TableHead>
-              <TableHead>Marca</TableHead>
               <TableHead>Cantidad</TableHead>
               <TableHead>Precio</TableHead>
               <TableHead>Acciones</TableHead>
@@ -203,9 +252,8 @@ export function SodaInventoryManager() {
               sodas.map((soda) => (
                 <TableRow key={soda.id}>
                   <TableCell>{soda.name}</TableCell>
-                  <TableCell>{soda.brand}</TableCell>
                   <TableCell>{soda.quantity}</TableCell>
-                  <TableCell>${soda.price.toFixed(2)}</TableCell>
+                  <TableCell>{soda.price != null ? `$${soda.price.toFixed(2)}` : "-"}</TableCell>
                   <TableCell>
                     <div className="flex space-x-2">
                       {isAdmin && (
@@ -249,18 +297,6 @@ export function SodaInventoryManager() {
                   id="name"
                   name="name"
                   value={formData.name}
-                  onChange={handleInputChange}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="brand" className="text-right">
-                  Marca
-                </Label>
-                <Input
-                  id="brand"
-                  name="brand"
-                  value={formData.brand}
                   onChange={handleInputChange}
                   className="col-span-3"
                 />
@@ -317,18 +353,6 @@ export function SodaInventoryManager() {
                   id="edit-name"
                   name="name"
                   value={formData.name}
-                  onChange={handleInputChange}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-brand" className="text-right">
-                  Marca
-                </Label>
-                <Input
-                  id="edit-brand"
-                  name="brand"
-                  value={formData.brand}
                   onChange={handleInputChange}
                   className="col-span-3"
                 />

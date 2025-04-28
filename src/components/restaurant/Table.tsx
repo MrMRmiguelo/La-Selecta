@@ -3,6 +3,7 @@ import { TableCustomer } from "@/types/restaurant";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { UserRound, Clock } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export type TableStatus = "free" | "occupied" | "reserved";
 
@@ -18,6 +19,8 @@ export interface TableProps {
   onClick?: (tableId: number) => void;
   shape?: "round" | "square" | "rect";
   food?: TableFoodItem[];
+  sodas?: TableFoodItem[];
+  sodaOrder?: { sodaId: string; quantity: number }[];
 }
 
 export function Table({
@@ -31,9 +34,21 @@ export function Table({
   shape = "round",
   food
 }: TableProps) {
-  const occupationTime = occupiedAt 
-    ? Math.floor((new Date().getTime() - occupiedAt.getTime()) / (1000 * 60)) 
-    : 0;
+  const [occupationTime, setOccupationTime] = useState(() => occupiedAt 
+    ? Math.max(0, Math.floor((new Date().getTime() - occupiedAt.getTime()) / (1000 * 60))) 
+    : 0);
+
+  useEffect(() => {
+    if (status === "occupied" && occupiedAt) {
+      setOccupationTime(Math.max(0, Math.floor((new Date().getTime() - occupiedAt.getTime()) / (1000 * 60))));
+      const interval = setInterval(() => {
+        setOccupationTime(Math.max(0, Math.floor((new Date().getTime() - occupiedAt.getTime()) / (1000 * 60))));
+      }, 60000);
+      return () => clearInterval(interval);
+    } else {
+      setOccupationTime(0);
+    }
+  }, [status, occupiedAt]);
 
   // Todas las mesas usan el mismo tamaño, solo varía el border-radius
   const tableClasses = cn(
@@ -59,7 +74,7 @@ export function Table({
         <span className="ml-1">{capacity}</span>
       </div>
       
-      {status === "occupied" && occupiedAt && (
+      {status === "occupied" && occupiedAt && occupationTime >= 0 && (
         <div className="absolute bottom-1 right-1 text-xs flex items-center">
           <Clock size={12} />
           <span className="ml-1">{occupationTime} min</span>

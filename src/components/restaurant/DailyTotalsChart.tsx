@@ -14,7 +14,7 @@ interface DailyTotalsChartProps {
 
 export function DailyTotalsChart({ dailyTotals }: DailyTotalsChartProps) {
   const chartData = dailyTotals.map(day => ({
-    date: format(new Date(day.date), 'dd', { locale: es }),
+    date: format(new Date(day.date), 'dd/MM/yyyy', { locale: es }),
     total: day.total
   }));
 

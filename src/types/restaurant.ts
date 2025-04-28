@@ -11,8 +11,9 @@ export interface MenuItem {
 }
 
 // Relaciona un alimento con una cantidad seleccionada.
-export interface TableFoodItem {
-  itemId: number;
+export interface TableFoodItem extends MenuItem {
   quantity: number;
+  nota?: string;
+  precioExtra?: number;
 }
 

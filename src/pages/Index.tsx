@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { RestaurantLayout } from "@/components/layout/RestaurantLayout";
 import { FloorPlan } from "@/components/restaurant/FloorPlan";
 import { Dashboard } from "@/components/restaurant/Dashboard";
@@ -9,6 +10,7 @@ import { AddTableDialog } from "@/components/restaurant/AddTableDialog";
 import { MenuManager } from "@/components/restaurant/MenuManager";
 import { useTables } from "@/hooks/useTables";
 import { useDailyTotal } from "@/hooks/useDailyTotal";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 const DEFAULT_MENU: MenuItem[] = [
   { id: 1, name: "Milanesa", price: 7.5 },
@@ -34,9 +36,17 @@ const DEFAULT_TABLES: TableProps[] = [
 const Index = () => {
   const [selectedTable, setSelectedTable] = useState<TableProps | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [menu, setMenu] = useState<MenuItem[]>(DEFAULT_MENU);
+  const [menu, setMenu] = useState<MenuItem[]>([]);
   const [addTableOpen, setAddTableOpen] = useState(false);
+  const isAdmin = useIsAdmin();
 
+  useEffect(() => {
+    async function fetchMenu() {
+      const { data, error } = await supabase.from("menu").select("*").order("id");
+      if (!error && data) setMenu(data);
+    }
+    fetchMenu();
+  }, []);
   const {
     tables,
     setTables,
@@ -61,16 +71,19 @@ const Index = () => {
     }
   };
 
-  const handleAddMenuItem = (item: Omit<MenuItem, "id">) => {
-    setMenu(menu => {
-      const nextId = menu.length ? Math.max(...menu.map(m => m.id)) + 1 : 1;
-      return [...menu, { ...item, id: nextId }];
-    });
+  const handleAddMenuItem = async (item: Omit<MenuItem, "id">) => {
+    const { data, error } = await supabase.from("menu").insert(item).select();
+    if (!error && data && data.length > 0) {
+      setMenu(menu => [...menu, data[0]]);
+    }
   };
 
-  const handleRemoveMenuItem = (dishId: number) => {
-    setMenu(menu => menu.filter(item => item.id !== dishId));
-    removeMenuItemInTables(dishId);
+  const handleRemoveMenuItem = async (dishId: number) => {
+    const { error } = await supabase.from("menu").delete().eq("id", dishId);
+    if (!error) {
+      setMenu(menu => menu.filter(item => item.id !== dishId));
+      removeMenuItemInTables(dishId);
+    }
   };
 
   return (
@@ -91,11 +104,13 @@ const Index = () => {
           </div>
         </header>
 
-        <MenuManager
-          menu={menu}
-          onAddMenuItem={handleAddMenuItem}
-          onRemoveMenuItem={handleRemoveMenuItem}
-        />
+        {isAdmin && (
+          <MenuManager
+            menu={menu}
+            onAddMenuItem={handleAddMenuItem}
+            onRemoveMenuItem={handleRemoveMenuItem}
+          />
+        )}
 
         <Dashboard tables={tables} dailyTotal={dailyTotal} />
 

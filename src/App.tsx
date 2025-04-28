@@ -10,6 +10,7 @@ import Admin from "./pages/Admin";
 import { RequireAuth } from "./components/auth/RequireAuth";
 import MonthlyAccountingPage from "./pages/MonthlyAccountingPage";
 import SodaInventoryPage from "./pages/SodaInventory";
+import UserSettings from "./pages/UserSettings";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/monthly-accounting" element={<MonthlyAccountingPage />} />
                   <Route path="/soda-inventory" element={<SodaInventoryPage />} />
+                  <Route path="/user-settings" element={<UserSettings />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </RequireAuth>

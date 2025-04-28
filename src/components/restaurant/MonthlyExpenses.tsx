@@ -98,7 +98,7 @@ export function MonthlyExpenses({ startDate, endDate, onTotalChange }: MonthlyEx
             {expenses.map((expense, index) => (
               <TableRow key={index}>
                 <TableCell>
-                  {format(new Date(expense.date), 'dd MMM yyyy', { locale: es })}
+                  {format(new Date(expense.date), 'dd/MM/yyyy', { locale: es })}
                 </TableCell>
                 <TableCell>{expense.description}</TableCell>
                 <TableCell className="text-right text-red-600">
