@@ -91,8 +91,8 @@ const Index = () => {
       <div className="p-6 space-y-6">
         <header className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Restaurant Mesa Manager</h1>
-            <p className="text-gray-500">Gestiona fácilmente las mesas de tu restaurante</p>
+            <h1 className="text-2xl font-bold text-gray-800">Delicias La Selecta</h1>
+            <p className="text-gray-500"></p>
           </div>
           <div className="text-sm text-gray-500">
             {new Date().toLocaleDateString('es-ES', { 
