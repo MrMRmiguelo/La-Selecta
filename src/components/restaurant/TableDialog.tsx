@@ -131,6 +131,7 @@ export function TableDialog({
       customer: status !== "free" ? { name: customerName, partySize } : undefined,
       food: selectedItems,
       sodas: selectedSodas,
+      status: status, // Asegurar que el estado se guarde según la selección del usuario
       occupiedAt: status === "occupied" ? new Date() : undefined
     }, totalAmount);
 
@@ -139,6 +140,7 @@ export function TableDialog({
       customer: status !== "free" ? { name: customerName, partySize } : undefined,
       food: selectedItems,
       soda_order: selectedSodas, // Cambiado de 'sodas' a 'soda_order'
+      status: status, // Asegurar que el estado se guarde según la selección del usuario
       occupied_at: status === "occupied" ? new Date() : undefined
     }).eq("id", table.id);
 
@@ -273,8 +275,7 @@ export function TableDialog({
                       />
                     </div>
                   </div>
-                ))
-                }
+                ))}
                 </div>
               
 
@@ -383,3 +384,27 @@ export function TableDialog({
     </Dialog>
   );
 }
+const [sodaQuantity, setSodaQuantity] = useState(1);
+const [foodQuantity, setFoodQuantity] = useState(1);
+<><div>
+  <div>
+    <Label htmlFor="foodQuantity" className="text-right">
+      Cantidad de Platos
+    </Label>
+  </div>
+  <Input
+    id="foodQuantity"
+    type="number"
+    value={foodQuantity}
+    onChange={(e) => setFoodQuantity(parseInt(e.target.value))}
+    min={1}
+    className="col-span-3" />
+</div><div>
+    <Input
+      id="sodaQuantity"
+      type="number"
+      value={sodaQuantity}
+      onChange={(e) => setSodaQuantity(parseInt(e.target.value))}
+      min={1}
+      className="col-span-3" />
+  </div></>
