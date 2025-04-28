@@ -1,4 +1,5 @@
 
+import logo from "/public/logo_la_selecta.png";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
@@ -42,6 +43,7 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50">
       <Card className="w-full max-w-md">
         <CardHeader>
+          <img src={logo} alt="Delicias La Selecta" className="mx-auto mb-4" />
           <CardTitle>Iniciar Sesión</CardTitle>
         </CardHeader>
         <CardContent>

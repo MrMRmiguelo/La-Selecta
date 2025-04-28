@@ -46,7 +46,11 @@ export const RestaurantLayout = ({ children }: RestaurantLayoutProps) => {
             <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
               <div className="flex items-center">
                 <SidebarTrigger className="mr-4" />
-                <h1 className="text-2xl font-bold text-gray-900">Restaurant Manager</h1>
+                
+                <img src="/public/logo_la_selecta.png" alt="Logo" className="h-20" />
+                
+              
+                
               </div>
               <div className="flex items-center gap-4">
                 {!loading && email && (
