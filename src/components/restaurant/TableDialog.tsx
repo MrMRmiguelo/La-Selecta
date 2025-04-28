@@ -126,27 +126,30 @@ export function TableDialog({
       0
     );
 
-    // Si el estado cambia a 'free' (pago realizado), guardar en el historial
-    if (status === "free" && table.status !== "free") {
-      await supabase.from("table_orders_history").insert({
-        table_id: table.id,
-        table_number: table.number,
-        food: table.food || [],
-        extras: (table.food || []).map(item => ({ nota: item.nota, precioExtra: item.precioExtra })),
-        soda_order: table.sodas || [],
-        total: totalAmount,
-        created_at: new Date().toISOString()
-      });
-    }
-
-    onUpdateTable({
+    await onUpdateTable({
       id: table.id,
-      status,
       customer: status !== "free" ? { name: customerName, partySize } : undefined,
       food: selectedItems,
       sodas: selectedSodas,
       occupiedAt: status === "occupied" ? new Date() : undefined
     }, totalAmount);
+
+    // Verificar si hay errores en la respuesta del servidor
+    const { error } = await supabase.from("tables").update({
+      customer: status !== "free" ? { name: customerName, partySize } : undefined,
+      food: selectedItems,
+      soda_order: selectedSodas, // Cambiado de 'sodas' a 'soda_order'
+      occupied_at: status === "occupied" ? new Date() : undefined
+    }).eq("id", table.id);
+
+    if (error) {
+      toast({
+        title: "Error al guardar",
+        description: error.message,
+        variant: "destructive"
+      });
+      return;
+    }
 
     onOpenChange(false);
   };
