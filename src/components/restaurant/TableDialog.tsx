@@ -42,12 +42,26 @@ export function TableDialog({
   onDeleteTable,
   menu
 }: TableDialogProps) {
-  const [status, setStatus] = useState<TableStatus>("free");
-  const [customerName, setCustomerName] = useState("");
-  const [partySize, setPartySize] = useState(1);
-  const [selectedItems, setSelectedItems] = useState<TableFoodItem[]>([]);
+  const [status, setStatus] = useState<TableStatus>(table?.status || "free");
+  const [customerName, setCustomerName] = useState(table?.customer?.name || "");
+  const [partySize, setPartySize] = useState(table?.customer?.partySize || 1);
+  const [selectedItems, setSelectedItems] = useState<TableFoodItem[]>(table?.food || []);
   const [sodas, setSodas] = useState<SodaInventory[]>([]);
-  const [selectedSodas, setSelectedSodas] = useState<TableFoodItem[]>([]);
+  const [selectedSodas, setSelectedSodas] = useState<TableFoodItem[]>(table?.sodaOrder?.map((soda: any) => ({
+    id: soda.id,
+    name: soda.name,
+    price: soda.price,
+    quantity: soda.quantity || 1,
+    sodaId: soda.id.toString(),
+    nota: "",
+    precioExtra: 0
+  })) || []);
+  const [selectedDishId, setSelectedDishId] = useState<string | null>(null);
+  const [dishQuantity, setDishQuantity] = useState<number>(1);
+  const [selectedSodaId, setSelectedSodaId] = useState<string | null>(null);
+  const [sodaQuantity, setSodaQuantity] = useState<number>(1);
+  const [tempNota, setTempNota] = useState<string>("");
+  const [tempPrecioExtra, setTempPrecioExtra] = useState<number>(0);
   const { toast } = useToast();
   const isAdmin = useIsAdmin();
 
@@ -57,7 +71,19 @@ export function TableDialog({
       setCustomerName(table.customer?.name || "");
       setPartySize(table.customer?.partySize || 1);
       setSelectedItems(table.food || []);
-      setSelectedSodas(table.sodas || []);
+      setSelectedSodas(
+        table.sodaOrder
+          ?.filter((soda: any) => soda && soda.id != null) // Filtrar sodas nulas o sin id
+          .map((soda: any) => ({
+            id: soda.id,
+            name: soda.name,
+            price: soda.price,
+            quantity: soda.quantity || 1,
+            sodaId: soda.id.toString(), // Ahora es seguro llamar a toString
+            nota: "",
+            precioExtra: 0
+          })) || []
+      );
     }
   }, [table]);
 
@@ -76,38 +102,66 @@ export function TableDialog({
     setStatus(newStatus);
   };
 
-  const handleAddMenuItem = (menuItem: MenuItem) => {
-    const existingItem = selectedItems.find(item => String(item.id) === String(menuItem.id));
+  const handleAddMenuItem = () => {
+    if (!selectedDishId) return;
+    const menuItem = menu.find(item => String(item.id) === selectedDishId);
+    if (!menuItem) return;
+
+    const existingItem = selectedItems.find(item => String(item.id) === selectedDishId);
     if (existingItem) {
       setSelectedItems(selectedItems.map(item =>
-        String(item.id) === String(menuItem.id)
-          ? { ...item, quantity: (item.quantity || 1) + 1 }
+        String(item.id) === selectedDishId
+          ? { 
+              ...item, 
+              quantity: (item.quantity || 0) + dishQuantity,
+              nota: tempNota,
+              precioExtra: tempPrecioExtra
+            }
           : item
       ));
     } else {
-      setSelectedItems([...selectedItems, { 
-        ...menuItem, 
-        quantity: 1,
-        nota: "",
-        precioExtra: 0
+      setSelectedItems([...selectedItems, {
+        ...menuItem,
+        quantity: dishQuantity,
+        nota: tempNota,
+        precioExtra: tempPrecioExtra,
+        sodaId: ""
       }]);
     }
+    // Reset selection
+    setSelectedDishId(null);
+    setDishQuantity(1);
+    setTempNota("");
+    setTempPrecioExtra(0);
   };
 
-  const handleAddSoda = (soda: SodaInventory) => {
-    const existingSoda = selectedSodas.find(item => String(item.id) === String(soda.id));
+  const handleAddSoda = () => {
+    if (!selectedSodaId) return;
+    const soda = sodas.find(s => String(s.id) === selectedSodaId);
+    if (!soda) return;
+
+    const existingSoda = selectedSodas.find(item => String(item.id) === selectedSodaId);
     if (existingSoda) {
       setSelectedSodas(selectedSodas.map(item =>
-        String(item.id) === String(soda.id)
-          ? { ...item, quantity: (item.quantity || 1) + 1 }
+        String(item.id) === selectedSodaId
+          ? { ...item, quantity: (item.quantity || 0) + sodaQuantity }
           : item
       ));
     } else {
-      setSelectedSodas([
-        ...selectedSodas,
-        { ...soda, id: Number(soda.id), quantity: 1 }
-      ]);
+      const newSodaItem: TableFoodItem = {
+        id: Number(soda.id),
+        name: soda.name,
+        price: soda.price,
+        quantity: sodaQuantity,
+        sodaId: soda.id.toString(),
+        nota: "",
+        precioExtra: 0
+      };
+      setSelectedSodas([...selectedSodas, newSodaItem]);
     }
+    // Reset selection
+    setSelectedSodaId(null);
+    setSodaQuantity(1);
   };
 
   const handleRemoveMenuItem = (itemId: number) => {
@@ -130,7 +184,7 @@ export function TableDialog({
       id: table.id,
       customer: status !== "free" ? { name: customerName, partySize } : undefined,
       food: selectedItems,
-      sodas: selectedSodas,
+      sodaOrder: selectedSodas,
       status: status, // Asegurar que el estado se guarde según la selección del usuario
       occupiedAt: status === "occupied" ? new Date() : undefined
     }, totalAmount);
@@ -231,8 +285,8 @@ export function TableDialog({
                   <Label htmlFor="menuItem" className="text-right">
                     Plato
                   </Label>
-                  <Select onValueChange={(value) => handleAddMenuItem(menu.find(item => item.id === parseInt(value)) || menu[0])}>
-                    <SelectTrigger className="col-span-3">
+                  <Select value={selectedDishId || ""} onValueChange={(value) => setSelectedDishId(value)}>
+                    <SelectTrigger className="col-span-2">
                       <SelectValue placeholder="Selecciona un plato" />
                     </SelectTrigger>
                     <SelectContent className="max-h-[200px] overflow-y-auto">
@@ -243,39 +297,37 @@ export function TableDialog({
                       ))}
                     </SelectContent>
                   </Select>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={dishQuantity}
+                    onChange={(e) => setDishQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="w-20"
+                  />
                 </div>
-                {selectedItems.map((item) => (
-                  <div key={item.id} className="grid grid-cols-4 items-center gap-4 mt-2">
-                    <Label className="text-right">Complementos</Label>
-                    <div className="col-span-3 flex gap-2">
-                      <Input
-                        placeholder="Complementos"
-                        value={item.nota || ""}
-                        onChange={(e) => {
-                          setSelectedItems(selectedItems.map(i =>
-                            i.id === item.id
-                              ? { ...i, nota: e.target.value }
-                              : i
-                          ));
-                        }}
-                        className="flex-1"
-                      />
-                      <Input
-                        type="number"
-                        placeholder="Precio extra"
-                        value={item.precioExtra || 0}
-                        onChange={(e) => {
-                          setSelectedItems(selectedItems.map(i =>
-                            i.id === item.id
-                              ? { ...i, precioExtra: parseFloat(e.target.value) || 0 }
-                              : i
-                          ));
-                        }}
-                        className="w-32"
-                      />
-                    </div>
+                <div className="grid grid-cols-4 items-center gap-4 mt-2">
+                  <Label className="text-right">Complementos</Label>
+                  <div className="col-span-3 flex gap-2">
+                    <Input
+                      placeholder="Complementos"
+                      value={tempNota}
+                      onChange={(e) => setTempNota(e.target.value)}
+                      className="flex-1"
+                      disabled={!selectedDishId}
+                    />
+                    <Input
+                      type="number"
+                      placeholder="Precio extra"
+                      value={tempPrecioExtra}
+                      onChange={(e) => setTempPrecioExtra(parseFloat(e.target.value) || 0)}
+                      className="w-32"
+                      disabled={!selectedDishId}
+                    />
                   </div>
-                ))}
+                </div>
+                <div className="flex justify-end mt-2">
+                  <Button onClick={handleAddMenuItem} size="sm" disabled={!selectedDishId}>Añadir</Button>
+                </div>
                 </div>
               
 
@@ -285,15 +337,15 @@ export function TableDialog({
                   <Label htmlFor="sodaItem" className="text-right">
                     Bebida
                   </Label>
-                  <Select onValueChange={(value) => handleAddSoda(sodas.find(soda => soda.id === value) || sodas[0])}>
-                    <SelectTrigger className="col-span-3">
+                  <Select value={selectedSodaId || ""} onValueChange={(value) => setSelectedSodaId(value)}>
+                    <SelectTrigger className="col-span-2">
                       <SelectValue placeholder="Selecciona una bebida" />
                     </SelectTrigger>
                     <SelectContent className="max-h-[200px] overflow-y-auto">
                       {sodas.map((soda) => (
                         <SelectItem 
                           key={soda.id} 
-                          value={soda.id}
+                          value={soda.id.toString()}
                           disabled={soda.quantity <= 0}
                         >
                           {soda.name} - L {soda.price}
@@ -301,6 +353,16 @@ export function TableDialog({
                       ))}
                     </SelectContent>
                   </Select>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={sodaQuantity}
+                    onChange={(e) => setSodaQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="w-20"
+                  />
+                </div>
+                <div className="flex justify-end mt-2">
+                  <Button onClick={handleAddSoda} size="sm" disabled={!selectedSodaId}>Añadir</Button>
                 </div>
               </div>
 
@@ -339,7 +401,7 @@ export function TableDialog({
                   ))}
                   <div className="mt-4 text-right font-semibold">
                     Total: L {[...selectedItems, ...selectedSodas].reduce(
-                      (sum, item) => sum + (item.price * (item.quantity || 1)),
+                      (sum, item) => sum + ((item.price + (item.precioExtra || 0)) * (item.quantity || 1)),
                       0
                     )}
                   </div>
@@ -384,27 +446,3 @@ export function TableDialog({
     </Dialog>
   );
 }
-const [sodaQuantity, setSodaQuantity] = useState(1);
-const [foodQuantity, setFoodQuantity] = useState(1);
-<><div>
-  <div>
-    <Label htmlFor="foodQuantity" className="text-right">
-      Cantidad de Platos
-    </Label>
-  </div>
-  <Input
-    id="foodQuantity"
-    type="number"
-    value={foodQuantity}
-    onChange={(e) => setFoodQuantity(parseInt(e.target.value))}
-    min={1}
-    className="col-span-3" />
-</div><div>
-    <Input
-      id="sodaQuantity"
-      type="number"
-      value={sodaQuantity}
-      onChange={(e) => setSodaQuantity(parseInt(e.target.value))}
-      min={1}
-      className="col-span-3" />
-  </div></>

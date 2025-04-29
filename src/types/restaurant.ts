@@ -15,5 +15,6 @@ export interface TableFoodItem extends MenuItem {
   quantity: number;
   nota?: string;
   precioExtra?: number;
+  sodaId: string;
 }
 
