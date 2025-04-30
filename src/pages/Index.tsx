@@ -64,11 +64,10 @@ const Index = () => {
     setDialogOpen(true);
   };
 
-  const handleUpdateTable = (tableUpdate: Partial<TableProps>, totalToAccount?: number) => {
+  // Ajustar la firma para incluir isPayment y eliminar el parámetro totalToAccount que ya no se usa aquí
+  const handleUpdateTable = (tableUpdate: Partial<TableProps>, totalAmount: number, isPayment: boolean) => {
+    // Pasar isPayment a updateTable. La lógica de addToDailyTotal ahora está en TableDialog.
     updateTable(tableUpdate);
-    if (totalToAccount && totalToAccount > 0) {
-      addToDailyTotal(totalToAccount);
-    }
   };
 
   const handleAddMenuItem = async (item: Omit<MenuItem, "id">) => {
@@ -131,6 +130,7 @@ const Index = () => {
         onUpdateTable={handleUpdateTable}
         onDeleteTable={deleteTable}
         menu={menu}
+        updateDailyTotal={addToDailyTotal} // Pasar la función para actualizar el total
       />
 
       <AddTableDialog

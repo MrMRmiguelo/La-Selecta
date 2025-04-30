@@ -4,6 +4,8 @@ import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, D
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AddTableDialogProps {
   open: boolean;
@@ -15,9 +17,26 @@ export function AddTableDialog({ open, onOpenChange, onAdd }: AddTableDialogProp
   const [number, setNumber] = useState("");
   const [capacity, setCapacity] = useState("");
   const [shape, setShape] = useState<"round" | "square" | "rect">("round");
+  const { toast } = useToast();
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!number || !capacity || Number(number) <= 0 || Number(capacity) <= 0) return;
+
+    // Verificar si ya existe una mesa con el mismo número
+    const { data: existingTables } = await supabase
+      .from("tables")
+      .select("number")
+      .eq("number", Number(number));
+
+    if (existingTables && existingTables.length > 0) {
+      toast({
+        title: "Error",
+        description: `Ya existe una mesa con el número ${number}`,
+        variant: "destructive"
+      });
+      return;
+    }
+
     onAdd(Number(number), Number(capacity), shape);
     setNumber("");
     setCapacity("");
