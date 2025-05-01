@@ -9,6 +9,7 @@ import { LayoutDashboard, Users, Home, Settings, CoinsIcon, GlassWater } from "l
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useIsKitchen } from "@/hooks/useIsKitchen";
 import { useCurrentUserRole } from "@/hooks/useCurrentUserRole";
+import { OrdersTable } from "@/components/restaurant/OrdersTable";
 
 interface RestaurantLayoutProps {
   children: ReactNode;
@@ -66,10 +67,11 @@ export const RestaurantLayout = ({ children }: RestaurantLayoutProps) => {
           <main className="flex-1">
             <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
               {isKitchen ? (
-                <div className="p-6 bg-yellow-50 border border-yellow-200 rounded-lg mb-6">
-                  <h2 className="text-xl font-bold mb-2 text-yellow-800">Comandas recibidas</h2>
-                  {/* Aquí se debe renderizar el componente/listado de comandas para cocina */}
-                  <p className="text-yellow-700">Aquí aparecerán las comandas recibidas para la cocina.</p>
+                <div className="space-y-6">
+                  <div className="p-6 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <h2 className="text-xl font-bold mb-2 text-yellow-800">Comandas recibidas</h2>
+                    <OrdersTable readOnly={true} />
+                  </div>
                 </div>
               ) : (
                 children
@@ -104,10 +106,7 @@ function AppSidebar({ isAdmin, isKitchen }: { isAdmin: boolean, isKitchen?: bool
                 <>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={location.pathname === "/dashboard"}>
-                      <Link to="/dashboard" className="w-full">
-                        <LayoutDashboard />
-                        <span>Dashboard</span>
-                      </Link>
+                    
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
@@ -127,6 +126,14 @@ function AppSidebar({ isAdmin, isKitchen }: { isAdmin: boolean, isKitchen?: bool
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={location.pathname === "/kitchen"}>
+                      <Link to="/kitchen" className="w-full">
+                        <GlassWater />
+                        <span>Cocina</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={location.pathname === "/user-settings"}>
                       <Link to="/user-settings" className="w-full">
                         <Settings />
@@ -135,24 +142,14 @@ function AppSidebar({ isAdmin, isKitchen }: { isAdmin: boolean, isKitchen?: bool
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   {isAdmin && (
-                    <>
-                      <SidebarMenuItem>
-                        <SidebarMenuButton asChild isActive={location.pathname === "/admin"}>
-                          <Link to="/admin" className="w-full">
-                            <Settings />
-                            <span>Admin</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                      <SidebarMenuItem>
-                        <SidebarMenuButton asChild isActive={location.pathname === "/admin"}>
-                          <Link to="/admin" className="w-full">
-                            <Users />
-                            <span>Gestión de Usuarios</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    </>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild isActive={location.pathname === "/admin"}>
+                        <Link to="/admin" className="w-full">
+                          <Users />
+                          <span>Gestión de Usuarios</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
                   )}
                 </>
               )}
@@ -167,3 +164,4 @@ function AppSidebar({ isAdmin, isKitchen }: { isAdmin: boolean, isKitchen?: bool
 export { LogoutButton };
 
 // Eliminar el botón Dashboard
+// Eliminar el botón Admin

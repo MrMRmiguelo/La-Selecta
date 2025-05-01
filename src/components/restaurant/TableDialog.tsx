@@ -33,8 +33,11 @@ interface TableDialogProps {
   onUpdateTable: (table: Partial<TableProps>, totalAmount: number, isPayment: boolean) => void;
   onDeleteTable?: (tableId: number) => void;
   menu: MenuItem[];
-  updateDailyTotal: (amount: number) => void; // Añadir prop para actualizar total diario
+  updateDailyTotal: (amount: number) => void;
 }
+
+// Importamos TableFoodItem desde types/restaurant.ts
+// No necesitamos redefinir la interfaz aquí
 
 // Definir un tipo para el elemento que se está editando
 type EditingItem = {
@@ -82,34 +85,56 @@ export function TableDialog({
   useEffect(() => {
     if (table) {
       setStatus(table.status);
-      setCustomerName(table.customer?.name || "");
-      setPartySize(table.customer?.partySize || 1);
-      setSelectedItems(table.food || []);
-      
-      // Asegurarse de que sodaOrder sea un array y tenga la estructura correcta
-      const sodaOrderArray = Array.isArray(table.sodaOrder) ? table.sodaOrder : [];
-      
-      // Depuración para ver qué contiene sodaOrder
-      console.log("sodaOrder original:", table.sodaOrder);
-      
-      // Mejorar el procesamiento de las bebidas
-      const processedSodas = sodaOrderArray
-        .filter((soda: any) => soda !== null && typeof soda === 'object')
-        .map((soda: any) => {
-          // Asegurarse de que todos los campos necesarios estén presentes
-          return {
-            id: soda.id,
-            name: soda.name || "Bebida sin nombre",
-            price: typeof soda.price === 'number' ? soda.price : 0,
-            quantity: typeof soda.quantity === 'number' ? soda.quantity : 1,
-            sodaId: soda.id ? String(soda.id) : "",
-            nota: soda.nota || "",
-            precioExtra: typeof soda.precioExtra === 'number' ? soda.precioExtra : 0
-          };
-        });
-      
-      console.log("Bebidas procesadas:", processedSodas);
-      setSelectedSodas(processedSodas);
+      // Si la mesa está libre, resetear los datos del cliente
+      if (table.status === "free") {
+        setCustomerName("");
+        setPartySize(1);
+        setSelectedItems([]); // Limpiar también los items seleccionados
+        setSelectedSodas([]); // Limpiar también las sodas seleccionadas
+      } else {
+        setCustomerName(table.customer?.name || "");
+        setPartySize(table.customer?.partySize || 1);
+        setSelectedItems(table.food || []);
+        
+        // Asegurarse de que sodaOrder sea un array y tenga la estructura correcta
+        const sodaOrderArray = Array.isArray(table.sodaOrder) ? table.sodaOrder : [];
+        
+        // Depuración para ver qué contiene sodaOrder
+        console.log("sodaOrder original:", table.sodaOrder);
+        
+        // Mejorar el procesamiento de las bebidas
+        const processedSodas = sodaOrderArray
+          .filter((soda: any) => soda !== null && typeof soda === 'object')
+          .map((soda: any) => {
+            // Asegurarse de que todos los campos necesarios estén presentes
+            return {
+              id: soda.id,
+              name: soda.name || "Bebida sin nombre",
+              price: typeof soda.price === 'number' ? soda.price : 0,
+              quantity: typeof soda.quantity === 'number' ? soda.quantity : 1,
+              sodaId: soda.id ? String(soda.id) : "",
+              nota: soda.nota || "",
+              precioExtra: typeof soda.precioExtra === 'number' ? soda.precioExtra : 0
+            };
+          });
+        
+        console.log("Bebidas procesadas:", processedSodas);
+        setSelectedSodas(processedSodas);
+      }
+    } else {
+      // Si no hay tabla seleccionada (p.ej., al cerrar el diálogo), resetear todo
+      setStatus("free");
+      setCustomerName("");
+      setPartySize(1);
+      setSelectedItems([]);
+      setSelectedSodas([]);
+      setSelectedDishId(null);
+      setDishQuantity(1);
+      setSelectedSodaId(null);
+      setSodaQuantity(1);
+      setTempNota("");
+      setTempPrecioExtra(0);
+      setEditingItem(null);
     }
   }, [table]);
 
@@ -126,6 +151,36 @@ export function TableDialog({
 
   const handleStatusChange = (newStatus: TableStatus) => {
     setStatus(newStatus);
+    // Si el nuevo estado es 'libre', guardar inmediatamente para liberar la mesa
+    if (newStatus === "free") {
+      // Llamar a handleSave con isPayment = true para limpiar los datos
+      // y actualizar el estado en la base de datos y la UI.
+      // Asegurarse de que 'table' no sea null antes de llamar a handleSave.
+      if (table) {
+        // Crear un objeto temporal con los datos necesarios para limpiar la mesa
+        const updateData = {
+          id: table.id,
+          customer: undefined,
+          food: [],
+          sodaOrder: [],
+          status: "free",
+          occupiedAt: null
+        };
+        // Llamar a onUpdateTable directamente para reflejar el cambio
+        // El cálculo del total no es relevante aquí ya que se está liberando
+        onUpdateTable(updateData, 0, true);
+        // Cerrar el diálogo
+        onOpenChange(false);
+      } else {
+        // Manejar el caso donde table es null, si es necesario
+        console.error("Error: 'table' es null al intentar liberar la mesa.");
+        toast({
+          title: "Error",
+          description: "No se pudo liberar la mesa porque los datos de la mesa no están disponibles.",
+          variant: "destructive"
+        });
+      }
+    }
   };
 
   const handleAddMenuItem = () => {
@@ -133,8 +188,9 @@ export function TableDialog({
     const menuItem = menu.find(item => String(item.id) === selectedDishId);
     if (!menuItem) return;
 
-    const newItem = {
+    const newItem: TableFoodItem = {
       ...menuItem,
+      instanceId: crypto.randomUUID(), // Generate unique ID for this instance
       quantity: dishQuantity,
       nota: tempNota,
       precioExtra: tempPrecioExtra,
@@ -180,8 +236,8 @@ export function TableDialog({
     setEditingItem(null); // Resetear edición
   };
 
-  const handleRemoveMenuItem = (indexToRemove: number) => {
-    setSelectedItems(selectedItems.filter((_, index) => index !== indexToRemove));
+  const handleRemoveMenuItem = (instanceIdToRemove: string) => {
+    setSelectedItems(selectedItems.filter((item) => item.instanceId !== instanceIdToRemove));
   };
 
   const handleRemoveSoda = (indexToRemove: number) => {
@@ -189,16 +245,26 @@ export function TableDialog({
   };
 
   // Función para iniciar la edición de un plato
-  const handleEditFoodItem = (item: TableFoodItem, index: number) => {
-    // Eliminar el plato actual
-    const updatedItems = selectedItems.filter((_, i) => i !== index);
+  const handleEditFoodItem = (itemToEdit: TableFoodItem) => {
+    // Verificar que itemToEdit tenga la propiedad instanceId
+    if (!itemToEdit.instanceId) {
+      console.error("Error: El item no tiene instanceId");
+      return;
+    }
+    
+    // Encontrar el índice del item a editar usando instanceId
+    const itemIndex = selectedItems.findIndex(item => item.instanceId === itemToEdit.instanceId);
+    if (itemIndex === -1) return; // No debería pasar, pero por seguridad
+
+    // Eliminar el plato actual de la lista usando su índice
+    const updatedItems = selectedItems.filter((_, i) => i !== itemIndex);
     setSelectedItems(updatedItems);
     
-    // Establecer los valores para el nuevo plato
-    setSelectedDishId(String(item.id));
-    setDishQuantity(item.quantity || 1);
-    setTempNota(item.nota || "");
-    setTempPrecioExtra(item.precioExtra || 0);
+    // Establecer los valores para el nuevo plato (que reemplazará al editado)
+    setSelectedDishId(String(itemToEdit.id));
+    setDishQuantity(itemToEdit.quantity || 1);
+    setTempNota(itemToEdit.nota || "");
+    setTempPrecioExtra(itemToEdit.precioExtra || 0);
     // Limpiar selección de soda por si acaso
     setSelectedSodaId(null);
     setSodaQuantity(1);
@@ -256,6 +322,45 @@ export function TableDialog({
     
     const newOccupiedAt = isPayment ? null : (status === "occupied" ? new Date() : undefined);
 
+    // Si es un pago, guardar el historial de la orden en table_orders_history
+    if (isPayment && totalAmount > 0) {
+      try {
+        // Preparar los datos para el historial
+        const orderHistoryData = {
+          table_id: table.id,
+          table_number: table.number,
+          food: selectedItems,
+          extras: selectedItems.filter(item => item.precioExtra && item.precioExtra > 0).map(item => ({
+            item_id: item.id,
+            item_name: item.name,
+            nota: item.nota || "",
+            precio_extra: item.precioExtra || 0
+          })),
+          soda_order: selectedSodas,
+          total: totalAmount,
+          created_at: new Date()
+        };
+
+        // Guardar en la tabla de historial
+        const { error: historyError } = await supabase
+          .from("table_orders_history")
+          .insert(orderHistoryData);
+
+        if (historyError) {
+          console.error("Error al guardar historial:", historyError);
+          toast({
+            title: "Advertencia",
+            description: "Se completó el pago pero hubo un error al guardar el historial.",
+            variant: "destructive"
+          });
+        } else {
+          console.log("Historial de orden guardado correctamente");
+        }
+      } catch (historyErr) {
+        console.error("Error al procesar historial:", historyErr);
+      }
+    }
+
     // Actualizar en Supabase primero
     const { error } = await supabase.from("tables").update({
       customer: newCustomer,
@@ -283,6 +388,35 @@ export function TableDialog({
       setPartySize(1);
       setSelectedItems([]);
       setSelectedSodas([]);
+    } else if (status === "occupied" && selectedItems.length > 0) {
+      // Crear una nueva orden en la tabla de órdenes para la cocina
+      try {
+        const orderData = {
+          table_number: table.number,
+          items: selectedItems.map(item => ({
+            name: item.name,
+            quantity: item.quantity,
+            notes: item.nota
+          })),
+          status: "pending",
+          created_at: new Date().toISOString()
+        };
+
+        const { error: orderError } = await supabase
+          .from("orders")
+          .insert(orderData);
+
+        if (orderError) {
+          console.error("Error al crear orden en cocina:", orderError);
+          toast({
+            title: "Advertencia",
+            description: "Se guardó la orden pero hubo un error al enviarla a cocina.",
+            variant: "destructive"
+          });
+        }
+      } catch (orderErr) {
+        console.error("Error al procesar orden de cocina:", orderErr);
+      }
     }
 
     // Actualizar el estado de la mesa en la interfaz
@@ -453,7 +587,7 @@ export function TableDialog({
 
           </div>       
         {/* Sección Pedido Actual */}
-        {(status === "occupied" || status === "reserved") && (
+        {(status !== "free") && (
           <div className="mt-6">
             <h4 className="font-semibold mb-2">Pedido Actual:</h4>
             {selectedItems.length === 0 && selectedSodas.length === 0 ? (
@@ -470,7 +604,7 @@ export function TableDialog({
                     <div className="flex items-center space-x-2">
                       <span>${((item.price + (item.precioExtra || 0)) * (item.quantity || 1)).toFixed(2)}</span>
 
-                      <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500" onClick={() => handleRemoveMenuItem(index)}>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500" onClick={() => handleRemoveMenuItem(item.instanceId)}>
                         <Trash size={14} />
                       </Button>
                     </div>
@@ -508,7 +642,7 @@ export function TableDialog({
                 {status === "occupied" && (
                   <Button onClick={() => setShowPaymentDialog(true)}>Cobrar y Liberar</Button>
                 )}
-                <Button onClick={() => handleSave(false)} disabled={status !== 'free' && (!customerName || partySize <= 0)}>Guardar</Button>
+                <Button onClick={() => handleSave(false)} disabled={status !== "free" && (!customerName || partySize <= 0)}>Guardar</Button>
               </div>
             </div>
           </div>

@@ -75,7 +75,7 @@ export function MonthlyExpenses({ startDate, endDate, onTotalChange }: MonthlyEx
   }
 
   if (expenses.length === 0) {
-    return <div className="p-4 text-center text-muted-foreground">No hay gastos registrados en este periodo</div>;
+    return <div className="p-4 text-center"></div>;
   }
 
   const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);

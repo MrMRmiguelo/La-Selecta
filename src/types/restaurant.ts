@@ -12,9 +12,10 @@ export interface MenuItem {
 
 // Relaciona un alimento con una cantidad seleccionada.
 export interface TableFoodItem extends MenuItem {
+  instanceId: string; // Unique identifier for this specific instance
   quantity: number;
-  nota?: string;
-  precioExtra?: number;
+  nota: string;
+  precioExtra: number;
   sodaId: string;
 }
 

@@ -11,6 +11,7 @@ import { RequireAuth } from "./components/auth/RequireAuth";
 import MonthlyAccountingPage from "./pages/MonthlyAccountingPage";
 import SodaInventoryPage from "./pages/SodaInventory";
 import UserSettings from "./pages/UserSettings";
+import Kitchen from "./pages/Kitchen";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ const App = () => (
                   <Route path="/monthly-accounting" element={<MonthlyAccountingPage />} />
                   <Route path="/soda-inventory" element={<SodaInventoryPage />} />
                   <Route path="/user-settings" element={<UserSettings />} />
+                  <Route path="/kitchen" element={<Kitchen />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </RequireAuth>
