@@ -15,7 +15,7 @@ interface MenuManagerProps {
 export function MenuManager({ menu, onAddMenuItem, onRemoveMenuItem }: MenuManagerProps) {
   const [newDishName, setNewDishName] = useState("");
   const [newDishPrice, setNewDishPrice] = useState("");
-  const [selectedKitchen, setSelectedKitchen] = useState<'Buffet' | 'Cocina_1' | 'Cocina_2'>('Buffet');
+  const [selectedKitchen, setSelectedKitchen] = useState<'buffet' | 'cocina adentro' | 'cocina afuera'>('buffet');
   const isAdmin = useIsAdmin();
 
   const handleAdd = () => {
@@ -60,15 +60,15 @@ export function MenuManager({ menu, onAddMenuItem, onRemoveMenuItem }: MenuManag
           />
           <Select
             value={selectedKitchen}
-            onValueChange={(value: 'Buffet' | 'Cocina_1' | 'Cocina_2') => setSelectedKitchen(value)}
+            onValueChange={(value: 'buffet' | 'cocina adentro' | 'cocina afuera') => setSelectedKitchen(value)}
           >
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Seleccionar cocina" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Buffet">Buffet</SelectItem>
-              <SelectItem value="Cocina_1">Cocina Adentro</SelectItem>
-              <SelectItem value="Cocina_2">Cocina Afuera</SelectItem>
+              <SelectItem value="buffet">Buffet</SelectItem>
+              <SelectItem value="cocina adentro">Cocina Adentro</SelectItem>
+              <SelectItem value="cocina afuera">Cocina Afuera</SelectItem>
             </SelectContent>
           </Select>
           <Button variant="secondary" onClick={handleAdd}>Añadir Plato</Button>

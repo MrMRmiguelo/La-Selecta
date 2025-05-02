@@ -74,6 +74,11 @@ export function TableDialog({
   const { toast } = useToast();
   const isAdmin = useIsAdmin();
 
+  // Función para verificar si una bebida está sin stock
+  const isSodaOutOfStock = (sodaId: string) => {
+    const soda = sodas.find(s => String(s.id) === sodaId);
+    return !soda || soda.quantity <= 0;
+  };
   // Función para calcular el total
   const calculateTotal = () => {
     return [...selectedItems, ...selectedSodas].reduce(
@@ -125,7 +130,8 @@ export function TableDialog({
               sodaId: sodaIdToUse, // Usar el ID procesado
               nota: soda.nota || "",
               precioExtra: typeof soda.precioExtra === 'number' ? soda.precioExtra : 0,
-              instanceId: soda.instanceId || crypto.randomUUID() // Asegurar que tenga instanceId
+              instanceId: soda.instanceId || crypto.randomUUID(), // Asegurar que tenga instanceId
+              tipo_cocina: 'buffet' as 'buffet' | 'cocina adentro' | 'cocina afuera' // Valor por defecto para bebidas
             };
           });
           
@@ -175,12 +181,12 @@ export function TableDialog({
       // Asegurarse de que 'table' no sea null antes de llamar a handleSave.
       if (table) {
         // Crear un objeto temporal con los datos necesarios para limpiar la mesa
-        const updateData = {
+        const updateData: Partial<TableProps> = {
           id: table.id,
           customer: undefined,
           food: [],
           sodaOrder: [],
-          status: "free",
+          status: "free" as TableStatus,
           occupiedAt: null
         };
         // Llamar a onUpdateTable directamente para reflejar el cambio
@@ -249,14 +255,15 @@ export function TableDialog({
     } else {
       const sodaInstanceId = crypto.randomUUID();
       const newSodaItem: TableFoodItem = {
-        id: sodaInstanceId,
+        id: Number(originalSodaId), // Convertir el ID original a número
         name: soda.name,
         price: soda.price,
         quantity: sodaQuantity,
         sodaId: String(originalSodaId), // Usar el ID original de la bebida en el inventario
         nota: "",
         precioExtra: 0,
-        instanceId: sodaInstanceId // Asignar el mismo UUID como instanceId
+        instanceId: sodaInstanceId, // Asignar UUID para la instancia
+        tipo_cocina: 'buffet' // Valor por defecto para bebidas
       };
       console.log("[DEBUG] Nueva bebida agregada con sodaId:", String(originalSodaId));
       setSelectedSodas([...selectedSodas, newSodaItem]);
@@ -344,7 +351,7 @@ export function TableDialog({
 
     // Si es un pago, actualizar el estado a libre y limpiar los datos
     const newStatus = isPayment ? "free" : status;
-    const newCustomer = isPayment ? undefined : (status !== "free" ? { name: customerName, partySize } : undefined);
+    const newCustomer = isPayment ? undefined : (status === "free" ? undefined : { name: customerName, partySize });
     const newFood = isPayment ? [] : selectedItems;
     
     // Asegurarse de que las bebidas se procesen correctamente
@@ -751,28 +758,22 @@ export function TableDialog({
                   <Label htmlFor="sodaItem" className="text-right">
                     Bebida
                   </Label>
-                  <Select value={selectedSodaId || ""} onValueChange={(value) => setSelectedSodaId(value)}>
-                    <SelectTrigger className="col-span-2">
-                      <SelectValue placeholder="Selecciona una bebida" />
+                  <Select value={selectedSodaId || ""} onValueChange={setSelectedSodaId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar bebida" />
                     </SelectTrigger>
-                    <SelectContent className="max-h-[200px] overflow-y-auto">
+                    <SelectContent>
                       {sodas.map((soda) => (
                         <SelectItem
                           key={soda.id}
-                          value={soda.id.toString()}
-                          disabled={soda.quantity <= 0}
+                          value={String(soda.id)}
+                          disabled={isSodaOutOfStock(String(soda.id))}
                         >
-                          {soda.name} - L {soda.price}
+                          {soda.name} {isSodaOutOfStock(String(soda.id)) && "(Fuera de stock)"}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <Input
-                    type="number"
-                    min={1}
-                    value={sodaQuantity}
-                    onChange={(e) => setSodaQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                    className="w-20" />
                 </div>
                 <div className="flex justify-end mt-2">
                   <Button onClick={handleAddSoda} size="sm" disabled={!selectedSodaId}>Añadir Bebida</Button>
@@ -838,7 +839,7 @@ export function TableDialog({
                 {status === "occupied" && (
                   <Button onClick={() => setShowPaymentDialog(true)}>Cobrar y Liberar</Button>
                 )}
-                <Button onClick={() => handleSave(false)} disabled={status !== "free" && (!customerName || partySize <= 0)}>Guardar</Button>
+                {newFunction()}
               </div>
             </div>
           </div>
@@ -858,4 +859,8 @@ export function TableDialog({
       />
     </Dialog>
   );
+
+  function newFunction() {
+    return <Button onClick={() => handleSave(false)} disabled={status === "free" || (!customerName || partySize <= 0)}>Guardar</Button>;
+  }
 }
