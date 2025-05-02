@@ -13,7 +13,8 @@ interface Order {
     quantity: number;
     notes?: string;
   }>;
-  status: "pending" | "in_progress" | "completed";
+  status: "pending" | "in_progress" | "completed" | "cancelled";
+  readOnly?: boolean;
   created_at: string;
 }
 
@@ -51,10 +52,12 @@ export function OrdersTable({ readOnly = false }: OrdersTableProps) {
       const { data, error } = await supabase
         .from('orders')
         .select('*')
+        .not('status', 'eq', 'cancelled')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-
+      
+      console.log('Órdenes recibidas:', data);
       setOrders(data || []);
     } catch (error) {
       console.error('Error al cargar órdenes:', error);
@@ -79,7 +82,7 @@ export function OrdersTable({ readOnly = false }: OrdersTableProps) {
 
       toast({
         title: "Estado actualizado",
-        description: `La orden ha sido marcada como ${newStatus === 'in_progress' ? 'en preparación' : 'completada'}`
+        description: `La orden ha sido marcada como ${newStatus === 'in_progress' ? 'en preparación' : newStatus === 'completed' ? 'completada' : 'cancelada'}`
       });
 
       fetchOrders();
@@ -101,8 +104,10 @@ export function OrdersTable({ readOnly = false }: OrdersTableProps) {
         return <Badge variant="destructive">En preparación</Badge>;
       case 'completed':
         return <Badge variant="default">Completado</Badge>;
+      case 'cancelled':
+        return <Badge variant="outline">Cancelado</Badge>;
       default:
-        return null;
+        return <Badge variant="outline">{status}</Badge>;
     }
   };
 
@@ -161,16 +166,26 @@ export function OrdersTable({ readOnly = false }: OrdersTableProps) {
                     </Button>
                   )}
                   {order.status === 'in_progress' && (
-                    <Button
-                      onClick={() => updateOrderStatus(order.id, 'completed')}
-                      variant="default"
-                      size="sm"
-                    >
-                      Marcar como completado
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => updateOrderStatus(order.id, 'completed')}
+                        variant="default"
+                        size="sm"
+                      >
+                        Marcar como completado
+                      </Button>
+                      <Button
+                        onClick={() => updateOrderStatus(order.id, 'cancelled')}
+                        variant="destructive"
+                        size="sm"
+                      >
+                        Cancelar preparación
+                      </Button>
+                    </div>
                   )}
                 </>
               )}
+              {readOnly && <span className="text-sm text-gray-500">Solo lectura</span>}
             </TableCell>
           </TableRow>
         ))}

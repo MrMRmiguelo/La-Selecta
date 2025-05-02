@@ -3,7 +3,7 @@ import { useState, useCallback, useEffect } from "react";
 import { TableProps } from "@/components/restaurant/Table";
 import { supabase } from "@/integrations/supabase/client";
 
-export function useTables(defaultTables: TableProps[]) {
+export function useTables() {
   const [tables, setTables] = useState<TableProps[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -22,8 +22,6 @@ export function useTables(defaultTables: TableProps[]) {
             occupiedAt: row.occupied_at ? new Date(row.occupied_at) : undefined
           })));
         }
-      } else {
-        if (isMounted) setTables(defaultTables);
       }
       if (isMounted) setLoading(false);
     }

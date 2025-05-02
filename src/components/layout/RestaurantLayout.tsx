@@ -1,6 +1,8 @@
 import { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { SidebarProvider, Sidebar, SidebarContent, SidebarGroup, 
   SidebarGroupLabel, SidebarGroupContent, SidebarMenu, 
   SidebarMenuItem, SidebarMenuButton, SidebarTrigger } from "@/components/ui/sidebar";
@@ -16,9 +18,13 @@ interface RestaurantLayoutProps {
 }
 
 function LogoutButton() {
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+  
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    window.location.href = "/login";
+    // Cerrar la sesión usando el método simplificado de Supabase
+    await signOut();
+    navigate('/login');
   };
 
   return (
@@ -48,7 +54,7 @@ export const RestaurantLayout = ({ children }: RestaurantLayoutProps) => {
               <div className="flex items-center">
                 <SidebarTrigger className="mr-4" />
                 
-                <img src="/public/logo_la_selecta.png" alt="Logo" className="h-20" />
+                <img src="/logo_la_selecta.png" alt="Logo" className="h-20" />
                 
               
                 
@@ -105,27 +111,6 @@ function AppSidebar({ isAdmin, isKitchen }: { isAdmin: boolean, isKitchen?: bool
               {!isKitchen && (
                 <>
                   <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={location.pathname === "/dashboard"}>
-                    
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={location.pathname === "/monthly-accounting"}>
-                      <Link to="/monthly-accounting" className="w-full">
-                        <CoinsIcon />
-                        <span>Contabilidad</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={location.pathname === "/soda-inventory"}>
-                      <Link to="/soda-inventory" className="w-full">
-                        <GlassWater />
-                        <span>Inventario de Bebidas</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={location.pathname === "/kitchen"}>
                       <Link to="/kitchen" className="w-full">
                         <GlassWater />
@@ -141,6 +126,27 @@ function AppSidebar({ isAdmin, isKitchen }: { isAdmin: boolean, isKitchen?: bool
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
+
+                  {isAdmin && (
+                    <>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton asChild isActive={location.pathname === "/monthly-accounting"}>
+                          <Link to="/monthly-accounting" className="w-full">
+                            <CoinsIcon />
+                            <span>Contabilidad</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton asChild isActive={location.pathname === "/soda-inventory"}>
+                          <Link to="/soda-inventory" className="w-full">
+                            <GlassWater />
+                            <span>Inventario de Bebidas</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    </>
+                  )}
                   {isAdmin && (
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild isActive={location.pathname === "/admin"}>

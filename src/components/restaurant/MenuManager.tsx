@@ -4,6 +4,7 @@ import { MenuItem } from "@/types/restaurant";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface MenuManagerProps {
   menu: MenuItem[];
@@ -14,11 +15,16 @@ interface MenuManagerProps {
 export function MenuManager({ menu, onAddMenuItem, onRemoveMenuItem }: MenuManagerProps) {
   const [newDishName, setNewDishName] = useState("");
   const [newDishPrice, setNewDishPrice] = useState("");
+  const [selectedKitchen, setSelectedKitchen] = useState<'Buffet' | 'Cocina_1' | 'Cocina_2'>('Buffet');
   const isAdmin = useIsAdmin();
 
   const handleAdd = () => {
     if (!newDishName.trim() || isNaN(Number(newDishPrice))) return;
-    onAddMenuItem({ name: newDishName.trim(), price: Number(newDishPrice) });
+    onAddMenuItem({ 
+      name: newDishName.trim(), 
+      price: Number(newDishPrice),
+      tipo_cocina: selectedKitchen
+    });
     setNewDishName("");
     setNewDishPrice("");
   };
@@ -52,6 +58,19 @@ export function MenuManager({ menu, onAddMenuItem, onRemoveMenuItem }: MenuManag
             step="0.01"
             className="w-32"
           />
+          <Select
+            value={selectedKitchen}
+            onValueChange={(value: 'Buffet' | 'Cocina_1' | 'Cocina_2') => setSelectedKitchen(value)}
+          >
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Seleccionar cocina" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Buffet">Buffet</SelectItem>
+              <SelectItem value="Cocina_1">Cocina Adentro</SelectItem>
+              <SelectItem value="Cocina_2">Cocina Afuera</SelectItem>
+            </SelectContent>
+          </Select>
           <Button variant="secondary" onClick={handleAdd}>Añadir Plato</Button>
         </div>
       )}

@@ -6,7 +6,7 @@ create table if not exists public.orders (
     status text not null default 'pending',
     created_at timestamp with time zone default timezone('utc'::text, now()) not null,
     updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
-    constraint orders_status_check check (status in ('pending', 'in_progress', 'completed', 'cancelled'))
+    constraint orders_status_check check (status in ('recibido', 'preparacion', 'completado', 'cancelled'))
 );
 
 -- Create index for faster queries by status

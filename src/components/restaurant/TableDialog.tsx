@@ -107,19 +107,36 @@ export function TableDialog({
           .filter((soda: any) => soda !== null && typeof soda === 'object')
           .map((soda: any) => {
             // Asegurarse de que todos los campos necesarios estén presentes
+            // Priorizar el uso del sodaId original si está disponible
+            const sodaIdToUse = soda.sodaId ? String(soda.sodaId).trim() : 
+                               (soda.id ? String(soda.id).trim() : null);
+                               
+            console.log("[DEBUG] Procesando bebida con ID:", {
+              original: soda.id,
+              sodaId: soda.sodaId,
+              usando: sodaIdToUse
+            });
+            
             return {
-              id: soda.id,
+              id: soda.id || crypto.randomUUID(), // Generar un ID si no existe
               name: soda.name || "Bebida sin nombre",
               price: typeof soda.price === 'number' ? soda.price : 0,
               quantity: typeof soda.quantity === 'number' ? soda.quantity : 1,
-              sodaId: soda.id ? String(soda.id) : "",
+              sodaId: sodaIdToUse, // Usar el ID procesado
               nota: soda.nota || "",
-              precioExtra: typeof soda.precioExtra === 'number' ? soda.precioExtra : 0
+              precioExtra: typeof soda.precioExtra === 'number' ? soda.precioExtra : 0,
+              instanceId: soda.instanceId || crypto.randomUUID() // Asegurar que tenga instanceId
             };
           });
+          
+        // Filtrar bebidas sin ID válido
+        const validSodas = processedSodas.filter(soda => soda.sodaId);
+        if (validSodas.length < processedSodas.length) {
+          console.warn("[DEBUG] Se eliminaron", processedSodas.length - validSodas.length, "bebidas sin ID válido");
+        }
         
-        console.log("Bebidas procesadas:", processedSodas);
-        setSelectedSodas(processedSodas);
+        console.log("Bebidas procesadas y validadas:", validSodas);
+        setSelectedSodas(validSodas); // Usar solo las bebidas con ID válido
       }
     } else {
       // Si no hay tabla seleccionada (p.ej., al cerrar el diálogo), resetear todo
@@ -183,6 +200,8 @@ export function TableDialog({
     }
   };
 
+  const [selectedKitchen, setSelectedKitchen] = useState<'buffet' | 'cocina adentro' | 'cocina afuera'>('buffet');
+
   const handleAddMenuItem = () => {
     if (!selectedDishId) return;
     const menuItem = menu.find(item => String(item.id) === selectedDishId);
@@ -194,7 +213,8 @@ export function TableDialog({
       quantity: dishQuantity,
       nota: tempNota,
       precioExtra: tempPrecioExtra,
-      sodaId: "" // Asegurarse de que sodaId no se herede incorrectamente
+      sodaId: "", // Asegurarse de que sodaId no se herede incorrectamente
+      tipo_cocina: selectedKitchen // Agregar el tipo de cocina seleccionado
     };
 
     setSelectedItems([...selectedItems, newItem]);
@@ -211,23 +231,34 @@ export function TableDialog({
     const soda = sodas.find(s => String(s.id) === selectedSodaId);
     if (!soda) return;
 
-    const existingSoda = selectedSodas.find(item => String(item.id) === selectedSodaId);
+    // Guardar el ID original de la bebida en el inventario
+    const originalSodaId = soda.id;
+    console.log("[DEBUG] ID original de la bebida en inventario:", originalSodaId);
+    
+    // Asegurarse de que la comparación se haga con strings limpios
+    const existingSoda = selectedSodas.find(item => String(item.sodaId).trim() === String(originalSodaId).trim());
+    console.log("[DEBUG] Comparando sodaId:", String(originalSodaId).trim(), "con las bebidas existentes");
+    
     if (existingSoda) {
       setSelectedSodas(selectedSodas.map(item =>
-        String(item.id) === selectedSodaId
+        String(item.sodaId).trim() === String(originalSodaId).trim()
           ? { ...item, quantity: (item.quantity || 0) + sodaQuantity }
           : item
       ));
+      console.log("[DEBUG] Actualizando cantidad de bebida existente con sodaId:", String(originalSodaId).trim());
     } else {
+      const sodaInstanceId = crypto.randomUUID();
       const newSodaItem: TableFoodItem = {
-        id: Number(soda.id),
+        id: sodaInstanceId,
         name: soda.name,
         price: soda.price,
         quantity: sodaQuantity,
-        sodaId: soda.id.toString(),
+        sodaId: String(originalSodaId), // Usar el ID original de la bebida en el inventario
         nota: "",
-        precioExtra: 0
+        precioExtra: 0,
+        instanceId: sodaInstanceId // Asignar el mismo UUID como instanceId
       };
+      console.log("[DEBUG] Nueva bebida agregada con sodaId:", String(originalSodaId));
       setSelectedSodas([...selectedSodas, newSodaItem]);
     }
     // Reset selection
@@ -276,8 +307,21 @@ export function TableDialog({
     const updatedSodas = selectedSodas.filter((_, i) => i !== index);
     setSelectedSodas(updatedSodas);
     
+    // Verificar que el sodaId sea válido
+    if (!item.sodaId) {
+      console.error("[DEBUG] Error: La bebida no tiene sodaId válido:", item);
+      toast({
+        title: "Error al editar bebida",
+        description: "La bebida no tiene un ID válido. Por favor, elimínela y agréguela nuevamente.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    console.log("[DEBUG] Editando bebida con sodaId:", item.sodaId);
+    
     // Establecer los valores para la nueva bebida
-    setSelectedSodaId(item.sodaId!);
+    setSelectedSodaId(item.sodaId);
     setSodaQuantity(item.quantity || 1);
     
     // Limpiar selección de plato por si acaso
@@ -286,7 +330,7 @@ export function TableDialog({
     setTempNota("");
     setTempPrecioExtra(0);
     
-    console.log("Editando bebida:", item);
+    console.log("[DEBUG] Datos de bebida para edición:", item);
   };
 
   // Modificar handleSave para aceptar un indicador de pago
@@ -311,18 +355,38 @@ export function TableDialog({
         name: soda.name,
         price: soda.price,
         quantity: soda.quantity || 1,
-        sodaId: soda.sodaId,
+        sodaId: soda.sodaId ? String(soda.sodaId).trim() : "", // Asegurar que el sodaId sea un string limpio
         nota: soda.nota || "",
         precioExtra: soda.precioExtra || 0
       };
     });
+    
+    console.log("[DEBUG] Procesando sodaOrder para guardar:", newSodaOrder.map(soda => ({ id: soda.id, sodaId: soda.sodaId })));
     
     // Depuración para verificar los datos que se envían a la base de datos
     console.log("Guardando sodaOrder:", newSodaOrder);
     
     const newOccupiedAt = isPayment ? null : (status === "occupied" ? new Date() : undefined);
 
-    // Si es un pago, guardar el historial de la orden en table_orders_history
+    // Actualizar en Supabase primero
+    const { error: updateError } = await supabase.from("tables").update({
+      customer: newCustomer,
+      food: newFood,
+      soda_order: newSodaOrder,
+      status: newStatus,
+      occupied_at: newOccupiedAt
+    }).eq("id", table.id);
+
+    if (updateError) {
+      toast({
+        title: "Error al guardar",
+        description: updateError.message,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Si es un pago y no hubo errores, proceder con el proceso de pago
     if (isPayment && totalAmount > 0) {
       try {
         // Preparar los datos para el historial
@@ -356,33 +420,164 @@ export function TableDialog({
         } else {
           console.log("Historial de orden guardado correctamente");
         }
-      } catch (historyErr) {
-        console.error("Error al procesar historial:", historyErr);
+
+        // Actualizar el inventario de bebidas
+        for (const soda of selectedSodas) {
+          try {
+            console.log("[DEBUG] Procesando bebida:", {
+              id: soda.id,
+              name: soda.name,
+              quantity: soda.quantity,
+              sodaId: soda.sodaId
+            });
+
+            // Validar que el sodaId sea válido
+            if (!soda.sodaId) {
+              console.error("[DEBUG] sodaId inválido o faltante:", soda.sodaId);
+              throw new Error(`ID inválido o faltante para la bebida ${soda.name}`);
+            }
+            
+            // Asegurar que el sodaId sea un string limpio para todas las operaciones
+            const sodaIdString = String(soda.sodaId).trim();
+
+            // Obtener la cantidad actual en inventario usando el sodaId
+            console.log("[DEBUG] Consultando bebida con ID:", sodaIdString);
+            
+            // Intentar primero con el sodaId directamente
+            let { data: currentSoda, error: sodaError } = await supabase
+              .from("soda_inventory")
+              .select("quantity, name")
+              .eq("id", sodaIdString)
+              .single();
+              
+            // Si hay error, intentar convertir a número si es posible
+            if (sodaError) {
+              console.log("[DEBUG] Primer intento fallido, intentando con conversión numérica");
+              const numericId = !isNaN(Number(sodaIdString)) ? Number(sodaIdString) : null;
+              
+              if (numericId !== null) {
+                const result = await supabase
+                  .from("soda_inventory")
+                  .select("quantity, name")
+                  .eq("id", numericId)
+                  .single();
+                  
+                currentSoda = result.data;
+                sodaError = result.error;
+                
+                if (!result.error) {
+                  console.log("[DEBUG] Consulta exitosa usando ID numérico:", numericId);
+                }
+              }
+            }
+
+            if (sodaError) {
+              console.error("[DEBUG] Error al obtener bebida:", sodaError);
+              console.error("[DEBUG] Detalles de la bebida que causó el error:", {
+                id: soda.id,
+                name: soda.name,
+                sodaId: soda.sodaId,
+                sodaIdString: sodaIdString
+              });
+              toast({
+                title: "Error al procesar bebida",
+                description: `No se pudo encontrar la bebida ${soda.name} en el inventario. ID: ${sodaIdString}`,
+                variant: "destructive"
+              });
+              // Continuar con la siguiente bebida en lugar de detener todo el proceso
+              continue;
+            }
+
+            console.log("[DEBUG] Datos actuales de inventario:", currentSoda);
+
+            if (!currentSoda) {
+              console.error("[DEBUG] Bebida no encontrada en inventario:", soda.name);
+              console.error("[DEBUG] ID utilizado para la búsqueda:", sodaIdString);
+              toast({
+                title: "Bebida no encontrada",
+                description: `No se encontró la bebida ${soda.name} en el inventario`,
+                variant: "destructive"
+              });
+              // Continuar con la siguiente bebida en lugar de detener todo el proceso
+              continue;
+            }
+
+            // Calcular nueva cantidad
+            const newQuantity = (currentSoda.quantity || 0) - (soda.quantity || 0);
+            console.log("[DEBUG] Cálculo de nueva cantidad:", {
+              bebida: currentSoda.name,
+              cantidadActual: currentSoda.quantity,
+              cantidadOrdenada: soda.quantity,
+              nuevaCantidad: newQuantity
+            });
+
+            // Validar que no quede en negativo
+            if (newQuantity < 0) {
+              console.error("[DEBUG] Cantidad insuficiente:", {
+                bebida: currentSoda.name,
+                disponible: currentSoda.quantity,
+                solicitado: soda.quantity
+              });
+              throw new Error(`No hay suficiente inventario de ${currentSoda.name}. Disponible: ${currentSoda.quantity}`);
+            }
+
+            // Actualizar inventario
+            console.log("[DEBUG] Actualizando inventario para bebida ID:", sodaIdString);
+            const { error: updateError } = await supabase
+              .from("soda_inventory")
+              .update({ quantity: newQuantity })
+              .eq("id", sodaIdString);
+
+            if (updateError) {
+              console.error("[DEBUG] Error al actualizar inventario:", updateError);
+              console.error("[DEBUG] Detalles de la bebida que causó el error de actualización:", {
+                bebida: currentSoda.name,
+                id: sodaIdString,
+                cantidadActual: currentSoda.quantity,
+                cantidadNueva: newQuantity
+              });
+              toast({
+                title: "Error al actualizar inventario",
+                description: `No se pudo actualizar el inventario para ${currentSoda.name}. El pago se procesó correctamente.`,
+                variant: "destructive"
+              });
+              // Continuar con la siguiente bebida en lugar de detener todo el proceso
+              continue;
+            }
+
+            console.log("[DEBUG] Inventario actualizado exitosamente:", {
+              bebida: currentSoda.name,
+              nuevaCantidad: newQuantity
+            });
+          } catch (error) {
+            console.error("[DEBUG] Error detallado al actualizar inventario:", error);
+            console.error("[DEBUG] Bebida que causó el error:", {
+              id: soda.id,
+              name: soda.name,
+              sodaId: soda.sodaId
+            });
+            toast({
+              title: "Error en inventario",
+              description: error instanceof Error ? error.message : "Hubo un problema al actualizar el inventario de bebidas.",
+              variant: "destructive"
+            });
+            // No propagar el error, continuar con las demás bebidas
+            continue;
+          }
+        }
+
+        updateDailyTotal(totalAmount); // Llamar a la prop para actualizar el total
+      } catch (error) {
+        console.error("Error durante el proceso de pago:", error);
+        toast({
+          title: "Error en el proceso de pago",
+          description: "Hubo un problema durante el proceso de pago. Por favor, inténtelo de nuevo.",
+          variant: "destructive"
+        });
+        return;
       }
-    }
 
-    // Actualizar en Supabase primero
-    const { error } = await supabase.from("tables").update({
-      customer: newCustomer,
-      food: newFood,
-      soda_order: newSodaOrder,
-      status: newStatus,
-      occupied_at: newOccupiedAt
-    }).eq("id", table.id);
-
-    if (error) {
-      toast({
-        title: "Error al guardar",
-        description: error.message,
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Si es un pago y no hubo errores, actualizar el total diario
-    if (isPayment) {
-      updateDailyTotal(totalAmount); // Llamar a la prop para actualizar el total
-      // Limpiar estado local
+      // Limpiar estado local solo si todo el proceso fue exitoso
       setStatus("free");
       setCustomerName("");
       setPartySize(1);
@@ -481,6 +676,7 @@ export function TableDialog({
                   onChange={(e) => setCustomerName(e.target.value)}
                   className="col-span-3" />
               </div>
+
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="partySize" className="text-right">
                   Personas

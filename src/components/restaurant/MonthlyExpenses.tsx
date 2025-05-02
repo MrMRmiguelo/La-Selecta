@@ -6,20 +6,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
-interface ExpenseItem {
+interface DailyIncomeItem {
   date: string;
   amount: number;
   description: string;
 }
 
-interface MonthlyExpensesProps {
+interface DailyIncomeProps {
   startDate: Date;
   endDate: Date;
   onTotalChange: (total: number) => void;
 }
 
-export function MonthlyExpenses({ startDate, endDate, onTotalChange }: MonthlyExpensesProps) {
-  const [expenses, setExpenses] = useState<ExpenseItem[]>([]);
+export function MonthlyExpenses({ startDate, endDate, onTotalChange }: DailyIncomeProps) {
+  const [incomes, setIncomes] = useState<DailyIncomeItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,40 +27,50 @@ export function MonthlyExpenses({ startDate, endDate, onTotalChange }: MonthlyEx
       setLoading(true);
       
       try {
-        // Consulta de órdenes como gastos (para demostración)
+        // Consulta de órdenes del día actual
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
         const { data, error } = await supabase
-          .from('orders')
-          .select('created_at, details')
-          .gte('created_at', startDate.toISOString())
-          .lte('created_at', endDate.toISOString());
+          .from('table_orders_history')
+          .select('created_at, total, table_number, food, soda_order')
+          .gte('created_at', today.toISOString())
+          .lte('created_at', new Date().toISOString())
+          .order('created_at', { ascending: false });
         
         if (error) {
-          console.error('Error fetching expenses:', error);
-          setExpenses([]);
+          console.error('Error fetching incomes:', error);
+          setIncomes([]);
           onTotalChange(0);
           return;
         }
         
-        // Transformar órdenes en gastos para demostración
-        const expensesData = data?.map(order => {
-          // Asumimos que details puede contener información sobre costos
-          const amount = Math.random() * 100; // Demo: costo aleatorio entre 0-100
+        // Transformar órdenes en ingresos
+        const incomesData = data?.map(order => {
+          // Obtener los detalles de comida y bebidas
+          const foodItems = order.food || [];
+          const sodaItems = order.soda_order || [];
+          const foodDescription = foodItems.map((item: any) => `${item.quantity}x ${item.name}`).join(', ');
+          const sodaDescription = sodaItems.map((item: any) => `${item.quantity}x ${item.name}`).join(', ');
+          
+          // Crear la descripción completa
+          const description = `Mesa #${order.table_number} - ${foodDescription}${sodaDescription ? `, ${sodaDescription}` : ''}`;
           
           return {
             date: order.created_at,
-            amount: parseFloat(amount.toFixed(2)),
-            description: `Insumos para cocina - Orden ${order.created_at}`
+            amount: parseFloat(order.total.toFixed(2)),
+            description: description
           };
         }) || [];
         
-        setExpenses(expensesData);
+        setIncomes(incomesData);
         
-        // Actualizar el total de gastos
-        const total = expensesData.reduce((sum, exp) => sum + exp.amount, 0);
+        // Actualizar el total de ingresos
+        const total = incomesData.reduce((sum, inc) => sum + inc.amount, 0);
         onTotalChange(total);
       } catch (e) {
-        console.error('Error in expenses calculation:', e);
-        setExpenses([]);
+        console.error('Error in income calculation:', e);
+        setIncomes([]);
         onTotalChange(0);
       } finally {
         setLoading(false);
@@ -71,19 +81,19 @@ export function MonthlyExpenses({ startDate, endDate, onTotalChange }: MonthlyEx
   }, [startDate, endDate, onTotalChange]);
 
   if (loading) {
-    return <div className="p-4 text-center">Cargando gastos...</div>;
+    return <div className="p-4 text-center">Cargando ingresos...</div>;
   }
 
-  if (expenses.length === 0) {
-    return <div className="p-4 text-center"></div>;
+  if (incomes.length === 0) {
+    return <div className="p-4 text-center">No hay ingresos registrados hoy</div>;
   }
 
-  const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const totalIncomes = incomes.reduce((sum, income) => sum + income.amount, 0);
 
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg">Gastos Mensuales</CardTitle>
+        <CardTitle className="text-lg">Ingresos del Día</CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
@@ -95,21 +105,21 @@ export function MonthlyExpenses({ startDate, endDate, onTotalChange }: MonthlyEx
             </TableRow>
           </TableHeader>
           <TableBody>
-            {expenses.map((expense, index) => (
+            {incomes.map((income, index) => (
               <TableRow key={index}>
                 <TableCell>
-                  {format(new Date(expense.date), 'dd/MM/yyyy', { locale: es })}
+                  {format(new Date(income.date), 'HH:mm', { locale: es })}
                 </TableCell>
-                <TableCell>{expense.description}</TableCell>
-                <TableCell className="text-right text-red-600">
-                  L {expense.amount.toFixed(2)}
+                <TableCell>{income.description}</TableCell>
+                <TableCell className="text-right text-green-600">
+                  L {income.amount.toFixed(2)}
                 </TableCell>
               </TableRow>
             ))}
             <TableRow className="bg-muted/50">
-              <TableCell colSpan={2} className="font-bold">Total Gastos</TableCell>
-              <TableCell className="text-right font-bold text-red-600">
-                L {totalExpenses.toFixed(2)}
+              <TableCell colSpan={2} className="font-bold">Total Ingresos</TableCell>
+              <TableCell className="text-right font-bold text-green-600">
+                L {totalIncomes.toFixed(2)}
               </TableCell>
             </TableRow>
           </TableBody>

@@ -8,6 +8,7 @@ export interface MenuItem {
   id: number;
   name: string;
   price: number;
+  tipo_cocina: 'buffet' | 'cocina adentro' | 'cocina afuera';
 }
 
 // Relaciona un alimento con una cantidad seleccionada.

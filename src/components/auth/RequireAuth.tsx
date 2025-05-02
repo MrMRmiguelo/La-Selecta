@@ -1,41 +1,74 @@
 
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/components/ui/use-toast";
+import { AUTH_TIMEOUT_MS } from "@/utils/authTimeout";
 import { supabase } from "@/integrations/supabase/client";
 
-export function RequireAuth({ children }: { children: React.ReactNode }) {
-  const [loading, setLoading] = useState(true);
+interface RequireAuthProps {
+  children: React.ReactNode;
+  allowedRoles?: string[];
+}
+
+export function RequireAuth({ children, allowedRoles }: RequireAuthProps) {
+  const { currentSession, loading, getUserRole } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { toast } = useToast();
+  const [timeoutOccurred, setTimeoutOccurred] = useState(false);
 
   useEffect(() => {
-    let ignore = false;
-    supabase.auth.getSession().then(({ data }) => {
-      if (ignore) return;
-      if (!data.session) {
-        navigate("/login");
+    // Verificar autenticación y roles
+    if (!loading) {
+      if (!currentSession) {
+        navigate('/login', { state: { from: location } });
+      } else if (allowedRoles) {
+        const userRole = getUserRole();
+        if (!userRole || !allowedRoles.includes(userRole)) {
+          toast({
+            title: 'Acceso denegado',
+            description: 'No tienes permisos para acceder a esta página',
+            variant: 'destructive',
+          });
+          navigate('/', { replace: true });
+        }
       }
-      setLoading(false);
-    });
+    }
 
-    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_OUT" || !session) {
+    // Implementar un timeout para evitar carga infinita
+    let timeoutId: NodeJS.Timeout;
+    
+    if (loading) {
+      timeoutId = setTimeout(() => {
+        setTimeoutOccurred(true);
+        toast({
+          title: "Error de carga",
+          description: "La autenticación está tardando demasiado. Por favor, recarga la página o inicia sesión nuevamente.",
+          variant: "destructive",
+        });
         navigate("/login");
-      }
-    });
+      }, AUTH_TIMEOUT_MS);
+    }
 
     return () => {
-      ignore = true;
-      listener.subscription.unsubscribe();
+      if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [navigate]);
+  }, [currentSession, loading, navigate, toast, location]);
 
-  if (loading) {
+  if (loading && !timeoutOccurred) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
         <span className="text-gray-500">Cargando...</span>
       </div>
     );
   }
 
+  if (!currentSession) {
+    return null;
+  }
+
   return <>{children}</>;
 }
+

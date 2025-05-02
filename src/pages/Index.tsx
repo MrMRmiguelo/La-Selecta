@@ -11,27 +11,12 @@ import { MenuManager } from "@/components/restaurant/MenuManager";
 import { useTables } from "@/hooks/useTables";
 import { useDailyTotal } from "@/hooks/useDailyTotal";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { LowInventoryAlert } from "@/components/alerts/LowInventoryAlert";
+import { useToast } from "@/hooks/use-toast"; // Importar useToast
 
-const DEFAULT_MENU: MenuItem[] = [
-  { id: 1, name: "Milanesa", price: 7.5 },
-  { id: 2, name: "Ensalada César", price: 5.0 },
-  { id: 3, name: "Pizza Margarita", price: 8.0 },
-];
 
-const DEFAULT_TABLES: TableProps[] = [
-  { id: 1, number: 1, capacity: 2, status: "free", shape: "round" },
-  { id: 2, number: 2, capacity: 2, status: "free", shape: "round" },
-  { id: 3, number: 3, capacity: 4, status: "occupied", shape: "square", customer: { name: "Martínez", partySize: 3 }, occupiedAt: new Date(Date.now() - 30 * 60 * 1000), food: [] },
-  { id: 4, number: 4, capacity: 4, status: "occupied", shape: "square", customer: { name: "Rodríguez", partySize: 4 }, occupiedAt: new Date(Date.now() - 45 * 60 * 1000), food: [] },
-  { id: 5, number: 5, capacity: 6, status: "reserved", shape: "rect", customer: { name: "López", partySize: 5 }, food: [] },
-  { id: 6, number: 6, capacity: 6, status: "free", shape: "rect" },
-  { id: 7, number: 7, capacity: 2, status: "free", shape: "round" },
-  { id: 8, number: 8, capacity: 2, status: "free", shape: "round" },
-  { id: 9, number: 9, capacity: 4, status: "free", shape: "square" },
-  { id: 10, number: 10, capacity: 4, status: "reserved", shape: "square", customer: { name: "Fernández", partySize: 4 }, food: [] },
-  { id: 11, number: 11, capacity: 8, status: "occupied", shape: "rect", customer: { name: "González", partySize: 7 }, occupiedAt: new Date(Date.now() - 15 * 60 * 1000), food: [] },
-  { id: 12, number: 12, capacity: 8, status: "free", shape: "rect" },
-];
+
+
 
 const Index = () => {
   const [selectedTable, setSelectedTable] = useState<TableProps | null>(null);
@@ -39,6 +24,7 @@ const Index = () => {
   const [menu, setMenu] = useState<MenuItem[]>([]);
   const [addTableOpen, setAddTableOpen] = useState(false);
   const isAdmin = useIsAdmin();
+  const { toast } = useToast(); // Obtener la función toast
 
   useEffect(() => {
     async function fetchMenu() {
@@ -54,7 +40,7 @@ const Index = () => {
     addTable,
     deleteTable,
     removeMenuItemInTables,
-  } = useTables(DEFAULT_TABLES);
+  } = useTables();
 
   const { dailyTotal, addToDailyTotal } = useDailyTotal();
 
@@ -71,9 +57,27 @@ const Index = () => {
   };
 
   const handleAddMenuItem = async (item: Omit<MenuItem, "id">) => {
+    console.log("[DEBUG] Intentando agregar plato:", item);
     const { data, error } = await supabase.from("menu").insert(item).select();
-    if (!error && data && data.length > 0) {
+    console.log("[DEBUG] Respuesta de Supabase:", { data, error });
+    
+    if (error) {
+      console.error("[DEBUG] Error al agregar plato:", error);
+      toast({ // Ahora toast está definido
+        title: "Error al agregar plato",
+        description: error.message,
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (data && data.length > 0) {
+      console.log("[DEBUG] Plato agregado exitosamente:", data[0]);
       setMenu(menu => [...menu, data[0]]);
+      toast({ // Ahora toast está definido
+        title: "Plato agregado",
+        description: `${item.name} ha sido agregado al menú.`
+      });
     }
   };
 
@@ -89,9 +93,9 @@ const Index = () => {
     <RestaurantLayout>
       <div className="p-6 space-y-6">
         <header className="flex justify-between items-center mb-6">
-          <div>
+          <div className="space-y-2">
             <h1 className="text-2xl font-bold text-gray-800">Delicias La Selecta</h1>
-            <p className="text-gray-500"></p>
+            <LowInventoryAlert threshold={5} />
           </div>
           <div className="text-sm text-gray-500">
             {new Date().toLocaleDateString('es-ES', { 
@@ -123,9 +127,9 @@ const Index = () => {
         </div>
       </div>
 
-      <TableDialog 
-        table={selectedTable} 
-        open={dialogOpen} 
+      <TableDialog
+        table={selectedTable}
+        open={dialogOpen}
         onOpenChange={setDialogOpen}
         onUpdateTable={handleUpdateTable}
         onDeleteTable={deleteTable}
