@@ -19,5 +19,9 @@ RUN npm run build
 # Expose the port used by the Vite server
 EXPOSE 8080
 
+# Set environment variables
+ENV PORT=8080
+ENV HOST=0.0.0.0
+
 # Command to run the application
 CMD ["npm", "run", "preview"]

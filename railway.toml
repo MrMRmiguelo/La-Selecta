@@ -5,7 +5,8 @@
 [deploy]
   startCommand = "npm run preview"
   healthcheckPath = "/"
-  healthcheckTimeout = 100
+  healthcheckTimeout = 300
+  healthcheckInterval = 15
   restartPolicyType = "on_failure"
 
 [[services]]
