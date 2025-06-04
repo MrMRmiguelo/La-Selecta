@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => ({
     host: "0.0.0.0",
     port: 8080,
     strictPort: true,
-    allowedHosts: ["healthcheck.railway.app"],
+    allowedHosts: ["healthcheck.railway.app", "la-selecta-production.up.railway.app"],
   },
   plugins: [
     react(),
