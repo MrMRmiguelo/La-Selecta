@@ -1,0 +1,29 @@
+[build]
+  builder = "dockerfile"
+  buildCommand = "npm run build"
+
+[deploy]
+  startCommand = "npm run preview"
+  healthcheckPath = "/"
+  healthcheckTimeout = 100
+  restartPolicyType = "on_failure"
+
+[[services]]
+  name = "web"
+  internal_port = 8080
+  protocol = "http"
+  auto_deploy = true
+
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 25
+    soft_limit = 20
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
