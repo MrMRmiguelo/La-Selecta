@@ -6,8 +6,8 @@ import { es } from "date-fns/locale";
 interface DailySale {
   date: string;
   total: number;
-  food_items: { itemId: number; quantity: number }[];
-  soda_items: { sodaId: string; quantity: number }[];
+  food_items?: { itemId: number; quantity: number }[];
+  soda_items?: { sodaId: string; quantity: number }[];
 }
 
 interface DailyTotalsTableProps {

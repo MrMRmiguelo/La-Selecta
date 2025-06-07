@@ -796,10 +796,10 @@ export function TableDialog({
                     <div>
                       <span>{item.quantity}x {item.name}</span>
                       {item.nota && <span className="text-xs text-gray-500 ml-2">({item.nota})</span>}
-                      {item.precioExtra > 0 && <span className="text-xs text-green-600 ml-2"> (+${item.precioExtra.toFixed(2)})</span>}
+                      {item.precioExtra > 0 && <span className="text-xs text-green-600 ml-2"> (+L {item.precioExtra.toFixed(2)})</span>}
                     </div>
                     <div className="flex items-center space-x-2">
-                      <span>${((item.price + (item.precioExtra || 0)) * (item.quantity || 1)).toFixed(2)}</span>
+                      <span>L {((item.price + (item.precioExtra || 0)) * (item.quantity || 1)).toFixed(2)}</span>
 
                       <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500" onClick={() => handleRemoveMenuItem(item.instanceId)}>
                         <Trash size={14} />
@@ -813,7 +813,7 @@ export function TableDialog({
                       <span>{soda.quantity}x {soda.name}</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <span>${(soda.price * (soda.quantity || 1)).toFixed(2)}</span>
+                      <span>L {(soda.price * (soda.quantity || 1)).toFixed(2)}</span>
                      
                       <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500" onClick={() => handleRemoveSoda(index)}>
                         <Trash size={14} />
@@ -824,7 +824,7 @@ export function TableDialog({
               </ul>
             )}
             <div className="mt-4 font-bold text-right">
-              Total: ${calculateTotal().toFixed(2)}
+              Total: L {calculateTotal().toFixed(2)}
             </div>
             <div className="mt-4 flex justify-between items-center">
               <div>

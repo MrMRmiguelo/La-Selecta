@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { MenuItem } from "@/types/restaurant";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,66 +12,38 @@ interface MenuManagerProps {
   onRemoveMenuItem: (id: number) => void;
 }
 
-export function MenuManager({ menu, onAddMenuItem, onRemoveMenuItem }: MenuManagerProps) {
-  const [newDishName, setNewDishName] = useState("");
-  const [newDishPrice, setNewDishPrice] = useState("");
-  const [selectedKitchen, setSelectedKitchen] = useState<'buffet' | 'cocina adentro' | 'cocina afuera'>('buffet');
-  const isAdmin = useIsAdmin();
-
-  const handleAdd = () => {
-    if (!newDishName.trim() || isNaN(Number(newDishPrice))) return;
-    onAddMenuItem({ 
-      name: newDishName.trim(), 
-      price: Number(newDishPrice),
-      tipo_cocina: selectedKitchen
-    });
-    setNewDishName("");
-    setNewDishPrice("");
-  };
+export function MenuManager({ menu }: { menu: MenuItem[] }) {
+  // Agrupar el menú por tipo de cocina
+  const groupedMenu = menu.reduce((acc, item) => {
+    if (!acc[item.tipo_cocina]) {
+      acc[item.tipo_cocina] = [];
+    }
+    acc[item.tipo_cocina].push(item);
+    return acc;
+  }, {} as Record<string, MenuItem[]>);
 
   return (
     <section>
-      <h2 className="text-lg font-semibold mb-2">Menú del día</h2>
-      <div className="flex flex-wrap gap-2 mb-2">
-        {menu.map((item) =>
-          <span key={item.id} className="bg-gray-200 px-3 py-1 rounded text-sm flex items-center gap-2">
-            <span>{item.name} <span className="text-gray-500">(L {item.price.toFixed(2)})</span></span>
-            {isAdmin && (
-              <Button variant="ghost" size="sm" onClick={() => onRemoveMenuItem(item.id)}>x</Button>
-            )}
-          </span>
-        )}
+      <h2 className="text-lg font-semibold mb-4">Menú del día</h2>
+      <div className="grid gap-4 md:grid-cols-3">
+        {Object.entries(groupedMenu).map(([kitchen, items]) => (
+          <div key={kitchen} className="bg-gray-50 p-4 rounded-lg">
+            <h3 className="font-medium text-sm text-gray-700 mb-2 capitalize">{kitchen}</h3>
+            <div className="space-y-2">
+              {items.map((item) => (
+                <div key={item.id} className="bg-white px-3 py-2 rounded text-sm flex justify-between items-center">
+                  <span className="font-medium">{item.name}</span>
+                  <span className="text-gray-600">L {item.price.toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
-      {isAdmin && (
-        <div className="flex gap-2 mb-4">
-          <Input
-            placeholder="Nombre plato"
-            value={newDishName}
-            onChange={e => setNewDishName(e.target.value)}
-            className="w-44"
-          />
-          <Input
-            placeholder="Precio"
-            value={newDishPrice}
-            onChange={e => setNewDishPrice(e.target.value.replace(",", "."))}
-            type="number"
-            step="0.01"
-            className="w-32"
-          />
-          <Select
-            value={selectedKitchen}
-            onValueChange={(value: 'buffet' | 'cocina adentro' | 'cocina afuera') => setSelectedKitchen(value)}
-          >
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Seleccionar cocina" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="buffet">Buffet</SelectItem>
-              <SelectItem value="cocina adentro">Cocina Adentro</SelectItem>
-              <SelectItem value="cocina afuera">Cocina Afuera</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button variant="secondary" onClick={handleAdd}>Añadir Plato</Button>
+      {menu.length === 0 && (
+        <div className="text-center text-gray-500 py-8">
+          <p>No hay platos disponibles en el menú.</p>
+          <p className="text-sm">Los administradores pueden agregar platos desde la sección "Gestión del Menú".</p>
         </div>
       )}
     </section>

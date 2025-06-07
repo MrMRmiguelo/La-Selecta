@@ -18,8 +18,8 @@ export function MonthlyTotal({ total, month, expenses = 0 }: MonthlyTotalProps) 
       {expenses > 0 && (
         <>
           <div className="text-xl flex justify-between items-center">
-            <span>Ganancia:</span>
-            <span className="text-green-600">L {expenses.toFixed(2)}</span>
+            <span>Egresos:</span>
+            <span className="text-red-600">L {expenses.toFixed(2)}</span>
           </div>
           
           <div className="text-xl flex justify-between items-center border-t pt-2">

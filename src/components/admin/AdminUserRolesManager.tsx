@@ -1,11 +1,14 @@
 
+import React from "react";
 import { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Database } from "@/integrations/supabase/types";
+import type { Database } from "@/types/supabase";
+
+
 
 type UserWithRole = {
   id: string;
@@ -24,30 +27,61 @@ export function AdminUserRolesManager() {
   useEffect(() => {
     const fetchUsers = async () => {
       setLoading(true);
-      // 1. Obtener users desde Supabase Auth
-      const { data: { users: authUsers }, error: authError } = await supabase.auth.admin.listUsers();
-      if (authError) {
-        toast({ title: "Error al listar usuarios", description: authError.message, variant: "destructive" });
-        setLoading(false);
-        return;
-      }
-      // 2. Obtener roles desde la tabla user_roles
-      const { data: userRoles, error: rolesError } = await supabase
-        .from("user_roles")
-        .select("user_id, role");
-      if (rolesError) {
-        toast({ title: "Error al cargar roles", description: rolesError.message, variant: "destructive" });
-        setLoading(false);
-        return;
-      }
+      try {
+        // Obtener todos los usuarios de auth.users
+        const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+        
+        if (authError) {
+          console.error('Error al cargar usuarios:', authError);
+          toast({ 
+            title: "Error al cargar usuarios", 
+            description: "No se pudieron cargar los usuarios. Verifica la conexión a la base de datos.", 
+            variant: "destructive" 
+          });
+          setLoading(false);
+          return;
+        }
 
-      // 3. Unir ambos conjuntos de datos
-      const usersWithRoles: UserWithRole[] = authUsers.map((u: any) => {
-        const found = userRoles?.find((r: any) => r.user_id === u.id);
-        return { id: u.id, email: u.email, role: found?.role ?? "normal" };
-      });
-      setUsers(usersWithRoles);
-      setLoading(false);
+        // Si no hay usuarios, mostrar mensaje informativo
+        if (!authUsers || authUsers.users.length === 0) {
+          setUsers([]);
+          setLoading(false);
+          return;
+        }
+
+        // Obtener roles desde la tabla user_roles
+        const { data: userRoles, error: rolesError } = await supabase
+          .from("user_roles")
+          .select("user_id, role");
+        
+        // Crear un mapa de roles para búsqueda rápida
+        const rolesMap = new Map();
+        if (userRoles && !rolesError) {
+          userRoles.forEach((roleData: any) => {
+            rolesMap.set(roleData.user_id, roleData.role);
+          });
+        }
+
+        // Crear lista de usuarios con sus roles
+        const usersWithRoles: UserWithRole[] = authUsers.users.map((user: any) => {
+          return { 
+            id: user.id, 
+            email: user.email || `Usuario ${user.id.substring(0, 8)}...`,
+            role: rolesMap.get(user.id) || "normal" 
+          };
+        });
+        
+        setUsers(usersWithRoles);
+      } catch (error) {
+        console.error('Error inesperado:', error);
+        toast({ 
+          title: "Error inesperado", 
+          description: "Ocurrió un error al cargar los usuarios.", 
+          variant: "destructive" 
+        });
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchUsers();
@@ -129,6 +163,7 @@ export function AdminUserRolesManager() {
                   >
                     <option value="normal">Normal</option>
                     <option value="admin">Admin</option>
+                    <option value="kitchen">Kitchen</option>
                   </select>
                 </TableCell>
                 <TableCell>

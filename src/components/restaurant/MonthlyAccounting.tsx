@@ -1,4 +1,5 @@
 
+import React from "react";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +7,7 @@ import { format, startOfMonth, endOfMonth } from "date-fns";
 import { es } from "date-fns/locale";
 import { MonthlyTotal } from "./MonthlyTotal";
 import { MonthlyExpenses } from "./MonthlyExpenses";
+import { ExpensesAndCashRegister } from "./ExpensesAndCashRegister";
 import { DailyTotalsChart } from "./DailyTotalsChart";
 import { DailyTotalsTable } from "./DailyTotalsTable";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -15,8 +17,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 interface DailyTotal {
   date: string;
   total: number;
-  food_items: { itemId: number; quantity: number }[];
-  soda_items: { sodaId: string; quantity: number }[];
+  food_items?: { itemId: number; quantity: number }[];
+  soda_items?: { sodaId: string; quantity: number }[];
 }
 
 interface DailySaleDetail {
@@ -39,6 +41,7 @@ export function MonthlyAccounting() {
   const [dailyTotals, setDailyTotals] = useState<DailyTotal[]>([]);
   const [monthlyTotal, setMonthlyTotal] = useState(0);
   const [monthlyExpenses, setMonthlyExpenses] = useState(0);
+  const [totalExpenses, setTotalExpenses] = useState(0);
   // Nuevo estado para el rango de fechas
   const [dateRange, setDateRange] = useState<{start: Date, end: Date}>({ start: startOfMonth(new Date()), end: endOfMonth(new Date()) });
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -48,6 +51,10 @@ export function MonthlyAccounting() {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const startDate = dateRange.start;
   const endDate = dateRange.end;
+
+  const handleExpensesTotalChange = (total: number) => {
+    setTotalExpenses(total);
+  };
 
   useEffect(() => {
     const fetchDailyTotals = async () => {
@@ -67,19 +74,21 @@ export function MonthlyAccounting() {
 
       if (error) {
         console.error('Error fetching daily totals:', error);
+        // Si la tabla no existe, crear datos vacíos para evitar errores
+        if (error.message?.includes('relation "daily_totals" does not exist')) {
+          console.warn('Tabla daily_totals no existe. Mostrando datos vacíos.');
+          setDailyTotals([]);
+          return;
+        }
         return;
       }
 
-      setDailyTotals(data);
-      setMonthlyTotal(data.reduce((sum, day) => sum + day.total, 0));
+      setDailyTotals(data || []);
+      setMonthlyTotal((data || []).reduce((sum, day) => sum + day.total, 0));
     };
 
     fetchDailyTotals();
   }, [startDate, endDate]);
-
-  const handleExpensesTotalChange = (total: number) => {
-    setMonthlyExpenses(total);
-  };
 
   const handleDateClick = async (date: string) => {
     setSelectedDate(date);
@@ -103,7 +112,12 @@ export function MonthlyAccounting() {
       setSaleDetail(dailyData);
     } else {
       console.error('Error fetching sale detail:', dailyError);
-      setSaleDetail(null);
+      // Si la tabla no existe, mostrar datos vacíos
+      if (dailyError?.message?.includes('relation "daily_totals" does not exist')) {
+        setSaleDetail({ date: formattedDate, total: 0 });
+      } else {
+        setSaleDetail(null);
+      }
     }
     
     // Obtener el historial de órdenes para ese día
@@ -196,20 +210,22 @@ export function MonthlyAccounting() {
           <MonthlyTotal 
             total={monthlyTotal} 
             month={dateRange.start}
-            expenses={monthlyExpenses} 
+            expenses={totalExpenses} 
           />
           <DailyTotalsChart dailyTotals={dailyTotals} />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
             <DailyTotalsTable dailyTotals={dailyTotals} onDateClick={handleDateClick} />
-            <MonthlyExpenses 
-              startDate={startDate}
-              endDate={endDate}
-              onTotalChange={handleExpensesTotalChange}
-            />
+            <div>
+              <ExpensesAndCashRegister 
+                startDate={startDate}
+                endDate={endDate}
+                onExpensesTotalChange={handleExpensesTotalChange}
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
-      <Dialog open={detailOpen} onOpenChange={handleCloseDetail} className="max-w-4xl">
+      <Dialog open={detailOpen} onOpenChange={handleCloseDetail}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Detalle de ventas del día</DialogTitle>

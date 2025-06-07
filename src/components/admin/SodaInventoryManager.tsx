@@ -20,6 +20,7 @@ export function SodaInventoryManager() {
   const [currentSoda, setCurrentSoda] = useState<SodaInventory | null>(null);
   const [formData, setFormData] = useState<SodaInventoryInsert>({
     name: "",
+    brand: "",
     quantity: 0,
     price: 0
   });
@@ -67,6 +68,14 @@ export function SodaInventoryManager() {
       toast({
         title: "Nombre requerido",
         description: "Por favor ingresa el nombre de la bebida.",
+        variant: "destructive"
+      });
+      return;
+    }
+    if (!formData.brand || formData.brand.trim() === "") {
+      toast({
+        title: "Marca requerida",
+        description: "Por favor ingresa la marca de la bebida.",
         variant: "destructive"
       });
       return;
@@ -123,6 +132,14 @@ export function SodaInventoryManager() {
       });
       return;
     }
+    if (!formData.brand || formData.brand.trim() === "") {
+      toast({
+        title: "Marca requerida",
+        description: "Por favor ingresa la marca de la bebida.",
+        variant: "destructive"
+      });
+      return;
+    }
     if (formData.quantity == null || isNaN(formData.quantity) || formData.quantity < 0) {
       toast({
         title: "Cantidad inválida",
@@ -142,6 +159,7 @@ export function SodaInventoryManager() {
     // Siempre incluir el campo price en la actualización
     const updates: SodaInventoryUpdate = {
       name: formData.name,
+      brand: formData.brand,
       quantity: formData.quantity,
       price: formData.price
     };
@@ -197,6 +215,7 @@ export function SodaInventoryManager() {
     setCurrentSoda(soda);
     setFormData({
       name: soda.name,
+      brand: soda.brand,
       quantity: soda.quantity,
       price: soda.price
     });
@@ -207,6 +226,7 @@ export function SodaInventoryManager() {
   const resetForm = () => {
     setFormData({
       name: "",
+      brand: "",
       quantity: 0,
       price: 0
     });
@@ -224,6 +244,7 @@ export function SodaInventoryManager() {
           <TableHeader>
             <TableRow>
               <TableHead>Nombre</TableHead>
+              <TableHead>Marca</TableHead>
               <TableHead>Cantidad</TableHead>
               <TableHead>Precio</TableHead>
               <TableHead>Acciones</TableHead>
@@ -232,19 +253,19 @@ export function SodaInventoryManager() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                <TableCell colSpan={6} className="text-center text-muted-foreground">
                   Cargando...
                 </TableCell>
               </TableRow>
             ) : error ? ( // Mostrar error si existe
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-red-500">
+                <TableCell colSpan={6} className="text-center text-red-500">
                   Error al cargar datos: {error}
                 </TableCell>
               </TableRow>
             ) : sodas.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                <TableCell colSpan={6} className="text-center text-muted-foreground">
                   No hay bebidas en el inventario
                 </TableCell>
               </TableRow>
@@ -252,8 +273,9 @@ export function SodaInventoryManager() {
               sodas.map((soda) => (
                 <TableRow key={soda.id}>
                   <TableCell>{soda.name}</TableCell>
+                  <TableCell>{soda.brand}</TableCell>
                   <TableCell>{soda.quantity}</TableCell>
-                  <TableCell>{soda.price != null ? `$${soda.price.toFixed(2)}` : "-"}</TableCell>
+                  <TableCell>{soda.price != null ? `L ${soda.price.toFixed(2)}` : "-"}</TableCell>
                   <TableCell>
                     <div className="flex space-x-2">
                       {isAdmin && (
@@ -297,6 +319,18 @@ export function SodaInventoryManager() {
                   id="name"
                   name="name"
                   value={formData.name}
+                  onChange={handleInputChange}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="brand" className="text-right">
+                  Marca
+                </Label>
+                <Input
+                  id="brand"
+                  name="brand"
+                  value={formData.brand}
                   onChange={handleInputChange}
                   className="col-span-3"
                 />
@@ -353,6 +387,18 @@ export function SodaInventoryManager() {
                   id="edit-name"
                   name="name"
                   value={formData.name}
+                  onChange={handleInputChange}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-brand" className="text-right">
+                  Marca
+                </Label>
+                <Input
+                  id="edit-brand"
+                  name="brand"
+                  value={formData.brand}
                   onChange={handleInputChange}
                   className="col-span-3"
                 />

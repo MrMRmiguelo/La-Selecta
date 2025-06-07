@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TableProps } from "@/components/restaurant/Table";
-import { UserRound, Clock, DollarSign } from "lucide-react";
+import { UserRound, Clock, Wallet } from "lucide-react";
 
 interface DashboardProps {
   tables: TableProps[];
@@ -93,7 +93,7 @@ export function Dashboard({ tables, dailyTotal = 0 }: DashboardProps) {
       <Card>
         <CardHeader className="pb-2 flex flex-row gap-2">
           <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
-            <DollarSign className="mr-2" size={16} />
+            <Wallet className="mr-2" size={16} />
             Contabilidad del Día
           </CardTitle>
         </CardHeader>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { RestaurantLayout } from "@/components/layout/RestaurantLayout";
 import { FloorPlan } from "@/components/restaurant/FloorPlan";
@@ -106,14 +106,6 @@ const Index = () => {
             })}
           </div>
         </header>
-
-        {isAdmin && (
-          <MenuManager
-            menu={menu}
-            onAddMenuItem={handleAddMenuItem}
-            onRemoveMenuItem={handleRemoveMenuItem}
-          />
-        )}
 
         <Dashboard tables={tables} dailyTotal={dailyTotal} />
 

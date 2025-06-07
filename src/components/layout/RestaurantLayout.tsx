@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import React from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -7,7 +8,7 @@ import { SidebarProvider, Sidebar, SidebarContent, SidebarGroup,
   SidebarGroupLabel, SidebarGroupContent, SidebarMenu, 
   SidebarMenuItem, SidebarMenuButton, SidebarTrigger } from "@/components/ui/sidebar";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, Home, Settings, CoinsIcon, GlassWater } from "lucide-react";
+import { LayoutDashboard, Users, Home, Settings, CoinsIcon, GlassWater, ChefHat, Receipt } from "lucide-react";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useIsKitchen } from "@/hooks/useIsKitchen";
 import { useCurrentUserRole } from "@/hooks/useCurrentUserRole";
@@ -108,55 +109,74 @@ function AppSidebar({ isAdmin, isKitchen }: { isAdmin: boolean, isKitchen?: bool
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              
               {!isKitchen && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={location.pathname === "/quick-billing"}>
+                    <Link to="/quick-billing" className="w-full">
+                      <Receipt />
+                      <span>Facturación Rápida</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
+              
+              {(isKitchen || isAdmin) && (
+                <SidebarMenuItem>
+                   <SidebarMenuButton asChild isActive={location.pathname === "/kitchen"}>
+                    <Link to="/kitchen" className="w-full">
+                      <GlassWater />
+                      <span>Cocina</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
+              
+              {!isKitchen && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={location.pathname === "/user-settings"}>
+                    <Link to="/user-settings" className="w-full">
+                      <Settings />
+                      <span>Ajustes de Usuario</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
+
+              {isAdmin && (
                 <>
                   <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={location.pathname === "/kitchen"}>
-                      <Link to="/kitchen" className="w-full">
-                        <GlassWater />
-                        <span>Cocina</span>
+                    <SidebarMenuButton asChild isActive={location.pathname === "/menu-management"}>
+                      <Link to="/menu-management" className="w-full">
+                        <ChefHat />
+                        <span>Gestión del Menú</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={location.pathname === "/user-settings"}>
-                      <Link to="/user-settings" className="w-full">
-                        <Settings />
-                        <span>Ajustes de Usuario</span>
+                    <SidebarMenuButton asChild isActive={location.pathname === "/monthly-accounting"}>
+                      <Link to="/monthly-accounting" className="w-full">
+                        <CoinsIcon />
+                        <span>Contabilidad</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-
-                  {isAdmin && (
-                    <>
-                      <SidebarMenuItem>
-                        <SidebarMenuButton asChild isActive={location.pathname === "/monthly-accounting"}>
-                          <Link to="/monthly-accounting" className="w-full">
-                            <CoinsIcon />
-                            <span>Contabilidad</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                      <SidebarMenuItem>
-                        <SidebarMenuButton asChild isActive={location.pathname === "/soda-inventory"}>
-                          <Link to="/soda-inventory" className="w-full">
-                            <GlassWater />
-                            <span>Inventario de Bebidas</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    </>
-                  )}
-                  {isAdmin && (
-                    <SidebarMenuItem>
-                      <SidebarMenuButton asChild isActive={location.pathname === "/admin"}>
-                        <Link to="/admin" className="w-full">
-                          <Users />
-                          <span>Gestión de Usuarios</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  )}
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={location.pathname === "/soda-inventory"}>
+                      <Link to="/soda-inventory" className="w-full">
+                        <GlassWater />
+                        <span>Inventario de Bebidas</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={location.pathname === "/admin"}>
+                      <Link to="/admin" className="w-full">
+                        <Users />
+                        <span>Gestión de Usuarios</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                 </>
               )}
             </SidebarMenu>

@@ -23,7 +23,13 @@ export function RequireKitchenAuth({ children }: { children: React.ReactNode }) 
     if (!authLoading && currentSession) {
       const userRole = currentSession.role;
       
+      // Admin tiene acceso completo a todas las áreas incluyendo cocina
       if (!userRole || (userRole !== "kitchen" && userRole !== "admin")) {
+        toast({
+          title: "Acceso denegado",
+          description: "No tienes permisos para acceder a la cocina.",
+          variant: "destructive",
+        });
         navigate("/");
         return;
       }

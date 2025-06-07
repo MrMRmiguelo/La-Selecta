@@ -1,3 +1,4 @@
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,6 +15,8 @@ import SodaInventory from "./pages/SodaInventory";
 import UserSettings from "./pages/UserSettings";
 import MonthlyAccountingPage from "./pages/MonthlyAccountingPage";
 import Kitchen from "./pages/Kitchen";
+import MenuManagement from "./pages/MenuManagement";
+import QuickBilling from "./pages/QuickBilling";
 import { RestaurantLayout } from "./components/layout/RestaurantLayout";
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -63,6 +66,16 @@ export default function App() {
             <Route path="/user-settings" element={
               <RequireAuth>
                 <UserSettings />
+              </RequireAuth>
+            } />
+            <Route path="/menu-management" element={
+              <RequireAuth>
+                <MenuManagement />
+              </RequireAuth>
+            } />
+            <Route path="/quick-billing" element={
+              <RequireAuth>
+                <QuickBilling />
               </RequireAuth>
             } />
             {/* Ruta de sesiones múltiples eliminada */}
