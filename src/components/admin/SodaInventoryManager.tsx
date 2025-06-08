@@ -237,7 +237,7 @@ export function SodaInventoryManager() {
     <Card className="mb-8 max-w-4xl">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Inventario de Bebidas</CardTitle>
-        {isAdmin && <Button onClick={() => setIsAddDialogOpen(true)}>Agregar Bebida</Button>}
+        <Button onClick={() => setIsAddDialogOpen(true)}>Agregar Bebida</Button>
       </CardHeader>
       <CardContent>
         <Table>
@@ -278,24 +278,20 @@ export function SodaInventoryManager() {
                   <TableCell>{soda.price != null ? `L ${soda.price.toFixed(2)}` : "-"}</TableCell>
                   <TableCell>
                     <div className="flex space-x-2">
-                      {isAdmin && (
-                        <>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openEditDialog(soda)}
-                          >
-                            Editar
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => handleDeleteSoda(soda.id)}
-                          >
-                            Eliminar
-                          </Button>
-                        </>
-                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openEditDialog(soda)}
+                      >
+                        Editar
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDeleteSoda(soda.id)}
+                      >
+                        Eliminar
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -367,7 +363,7 @@ export function SodaInventoryManager() {
               <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
                 Cancelar
               </Button>
-              <Button onClick={handleAddSoda} disabled={!isAdmin}>Guardar</Button>
+              <Button onClick={handleAddSoda}>Guardar</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -435,7 +431,7 @@ export function SodaInventoryManager() {
               <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
                 Cancelar
               </Button>
-              <Button onClick={handleEditSoda} disabled={!isAdmin}>Actualizar</Button>
+              <Button onClick={handleEditSoda}>Actualizar</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

@@ -21,7 +21,7 @@ interface Soda {
   id: string;
   name: string;
   price: number;
-  stock: number;
+  quantity: number;
 }
 
 interface BillSoda extends Soda {
@@ -74,7 +74,7 @@ const QuickBilling = () => {
   };
 
   const addSodaToBill = (soda: Soda) => {
-    if (soda.stock <= 0) {
+    if (soda.quantity <= 0) {
       toast({
         title: "Sin stock",
         description: `No hay stock disponible de ${soda.name}`,
@@ -86,10 +86,10 @@ const QuickBilling = () => {
     setBillSodas(prev => {
       const existingSoda = prev.find(billSoda => billSoda.id === soda.id);
       if (existingSoda) {
-        if (existingSoda.quantity >= soda.stock) {
+        if (existingSoda.quantity >= soda.quantity) {
           toast({
             title: "Stock insuficiente",
-            description: `Solo hay ${soda.stock} unidades disponibles de ${soda.name}`,
+            description: `Solo hay ${soda.quantity} unidades disponibles de ${soda.name}`,
             variant: "destructive"
           });
           return prev;
@@ -187,20 +187,23 @@ const QuickBilling = () => {
 
       // Actualizar stock de bebidas
       for (const billSoda of billSodas) {
-        const { error: stockError } = await supabase
-          .from("soda_inventory")
-          .update({ stock: billSoda.stock - billSoda.quantity })
-          .eq("id", billSoda.id);
-        
-        if (stockError) {
-          throw stockError;
+        const soda = sodas.find(s => s.id === billSoda.id);
+        if (soda) {
+          const { error: stockError } = await supabase
+            .from("soda_inventory")
+            .update({ quantity: soda.quantity - billSoda.quantity })
+            .eq("id", billSoda.id);
+          
+          if (stockError) {
+            throw stockError;
+          }
         }
       }
 
       // Actualizar el estado local de sodas
       setSodas(prev => prev.map(soda => {
         const billSoda = billSodas.find(bs => bs.id === soda.id);
-        return billSoda ? { ...soda, stock: soda.stock - billSoda.quantity } : soda;
+        return billSoda ? { ...soda, quantity: soda.quantity - billSoda.quantity } : soda;
       }));
 
       toast({
@@ -400,7 +403,7 @@ const QuickBilling = () => {
                         variant="outline"
                         className="h-auto p-4 flex flex-col items-start text-left"
                         onClick={() => addSodaToBill(soda)}
-                        disabled={soda.stock <= 0}
+                        disabled={soda.quantity <= 0}
                       >
                         <div className="flex justify-between w-full items-center">
                           <span className="font-medium">{soda.name}</span>
@@ -408,7 +411,7 @@ const QuickBilling = () => {
                         </div>
                         <div className="flex justify-between w-full">
                           <span className="text-sm text-gray-600">L {soda.price.toFixed(2)}</span>
-                          <span className="text-xs text-gray-500">Stock: {soda.stock}</span>
+                          <span className="text-xs text-gray-500">Stock: {soda.quantity}</span>
                         </div>
                       </Button>
                     ))}
@@ -480,7 +483,7 @@ const QuickBilling = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => addSodaToBill(soda)}
-                          disabled={soda.quantity >= soda.stock}
+                          disabled={billSodas.find(bs => bs.id === soda.id)?.quantity >= soda.quantity}
                         >
                           <Plus className="h-3 w-3" />
                         </Button>

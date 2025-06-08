@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Plus, Trash2, Wallet } from "lucide-react";
+import { Plus, Trash2, Wallet, Calendar } from "lucide-react";
 
 interface Expense {
   id: number;
@@ -43,12 +43,13 @@ export function ExpensesAndCashRegister({ startDate, endDate, onExpensesTotalCha
   const [newExpense, setNewExpense] = useState({ amount: '', description: '', category: '' });
   const [cashAmount, setCashAmount] = useState('');
   const [cashNotes, setCashNotes] = useState('');
+  const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const { toast } = useToast();
 
   useEffect(() => {
     fetchExpenses();
     fetchCashRegister();
-  }, [startDate, endDate]);
+  }, [startDate, endDate, selectedDate]);
 
   useEffect(() => {
     const total = expenses.reduce((sum, expense) => sum + expense.amount, 0);
@@ -60,9 +61,8 @@ export function ExpensesAndCashRegister({ startDate, endDate, onExpensesTotalCha
       const { data, error } = await supabase
         .from('expenses')
         .select('*')
-        .gte('date', format(startDate, 'yyyy-MM-dd'))
-        .lte('date', format(endDate, 'yyyy-MM-dd'))
-        .order('date', { ascending: false });
+        .eq('date', selectedDate)
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching expenses:', error);
@@ -111,7 +111,7 @@ export function ExpensesAndCashRegister({ startDate, endDate, onExpensesTotalCha
       const { data, error } = await supabase
         .from('expenses')
         .insert({
-          date: format(new Date(), 'yyyy-MM-dd'),
+          date: selectedDate,
           amount: parseFloat(newExpense.amount),
           description: newExpense.description,
           category: newExpense.category || 'General'
@@ -433,6 +433,17 @@ export function ExpensesAndCashRegister({ startDate, endDate, onExpensesTotalCha
               </DialogContent>
             </Dialog>
           </div>
+          <div className="flex items-center gap-2 mt-4">
+            <Calendar className="h-4 w-4" />
+            <Label htmlFor="expense-date">Filtrar por fecha:</Label>
+            <Input
+              id="expense-date"
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="w-auto"
+            />
+          </div>
         </CardHeader>
         <CardContent>
           {expenses.length > 0 ? (
@@ -479,7 +490,7 @@ export function ExpensesAndCashRegister({ startDate, endDate, onExpensesTotalCha
             </Table>
           ) : (
             <div className="text-center py-4 text-gray-500">
-              No hay egresos registrados
+              No hay egresos registrados para el {format(new Date(selectedDate), 'dd/MM/yyyy', { locale: es })}
             </div>
           )}
         </CardContent>

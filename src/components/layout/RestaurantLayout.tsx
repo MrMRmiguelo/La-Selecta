@@ -143,16 +143,29 @@ function AppSidebar({ isAdmin, isKitchen }: { isAdmin: boolean, isKitchen?: bool
                 </SidebarMenuItem>
               )}
 
-              {isAdmin && (
+              {!isKitchen && !isAdmin && (
                 <>
                   <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={location.pathname === "/menu-management"}>
-                      <Link to="/menu-management" className="w-full">
-                        <ChefHat />
-                        <span>Gestión del Menú</span>
+                    <SidebarMenuButton asChild isActive={location.pathname === "/daily-accounting"}>
+                      <Link to="/daily-accounting" className="w-full">
+                        <CoinsIcon />
+                        <span>Ventas Diarias</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={location.pathname === "/soda-inventory"}>
+                      <Link to="/soda-inventory" className="w-full">
+                        <GlassWater />
+                        <span>Inventario de Bebidas</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </>
+              )}
+              
+              {isAdmin && (
+                <>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={location.pathname === "/monthly-accounting"}>
                       <Link to="/monthly-accounting" className="w-full">
@@ -166,6 +179,14 @@ function AppSidebar({ isAdmin, isKitchen }: { isAdmin: boolean, isKitchen?: bool
                       <Link to="/soda-inventory" className="w-full">
                         <GlassWater />
                         <span>Inventario de Bebidas</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={location.pathname === "/menu-management"}>
+                      <Link to="/menu-management" className="w-full">
+                        <ChefHat />
+                        <span>Gestión del Menú</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

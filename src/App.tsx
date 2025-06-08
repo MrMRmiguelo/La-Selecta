@@ -14,6 +14,7 @@ import { ConnectionCheck } from "./components/auth/ConnectionCheck";
 import SodaInventory from "./pages/SodaInventory";
 import UserSettings from "./pages/UserSettings";
 import MonthlyAccountingPage from "./pages/MonthlyAccountingPage";
+import DailyAccountingPage from "./pages/DailyAccountingPage";
 import Kitchen from "./pages/Kitchen";
 import MenuManagement from "./pages/MenuManagement";
 import QuickBilling from "./pages/QuickBilling";
@@ -59,10 +60,15 @@ export default function App() {
               </RequireAuth>
             } />
             <Route path="/monthly-accounting" element={
-              <RequireAuth>
-                <MonthlyAccountingPage />
-              </RequireAuth>
-            } />
+            <RequireAuth>
+              <MonthlyAccountingPage />
+            </RequireAuth>
+          } />
+          <Route path="/daily-accounting" element={
+            <RequireAuth>
+              <DailyAccountingPage />
+            </RequireAuth>
+          } />
             <Route path="/user-settings" element={
               <RequireAuth>
                 <UserSettings />
