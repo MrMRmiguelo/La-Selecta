@@ -21,6 +21,7 @@ import {
 import { TableStatus, TableProps } from "@/components/restaurant/Table";
 import { TableCustomer, MenuItem, TableFoodItem } from "@/types/restaurant";
 import { Trash, Pencil } from "lucide-react"; // Importar Pencil
+import { printInvoice } from "@/utils/printInvoice";
 import { useToast } from "@/hooks/use-toast";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { SodaInventory } from "@/types/soda";
@@ -574,6 +575,34 @@ export function TableDialog({
         }
 
         updateDailyTotal(totalAmount); // Llamar a la prop para actualizar el total
+        
+        // Generar e imprimir factura para mesa
+        const invoiceData = {
+          customerName: customerName || undefined,
+          tableNumber: table.number,
+          items: selectedItems.map(item => ({
+            name: item.name,
+            quantity: item.quantity || 1,
+            price: item.price + (item.precioExtra || 0),
+            subtotal: (item.price + (item.precioExtra || 0)) * (item.quantity || 1),
+            nota: item.nota,
+            precioExtra: item.precioExtra
+          })),
+          sodas: selectedSodas.map(soda => ({
+            name: soda.name,
+            quantity: soda.quantity || 1,
+            price: soda.price,
+            subtotal: soda.price * (soda.quantity || 1),
+            nota: soda.nota
+          })),
+          total: totalAmount,
+          date: new Date(),
+          invoiceType: 'mesa' as const
+        };
+
+        // Imprimir factura automáticamente
+        printInvoice(invoiceData);
+        
       } catch (error) {
         console.error("Error durante el proceso de pago:", error);
         toast({

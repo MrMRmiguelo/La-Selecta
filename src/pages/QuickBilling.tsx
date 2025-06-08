@@ -5,11 +5,12 @@ import { MenuItem } from "@/types/restaurant";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Minus, ShoppingCart, Receipt, Trash2 } from "lucide-react";
+import { Plus, Minus, ShoppingCart, Receipt, Trash2, Printer } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { printInvoice, downloadInvoice } from "@/utils/printInvoice";
 
 interface BillItem extends MenuItem {
   quantity: number;
@@ -207,6 +208,30 @@ const QuickBilling = () => {
         description: `Factura por L ${totalAmount.toFixed(2)} procesada exitosamente.`
       });
 
+      // Generar e imprimir factura
+      const invoiceData = {
+        customerName: customerName || undefined,
+        tableNumber: undefined, // No hay mesa en facturación rápida
+        items: billItems.map(item => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          subtotal: item.subtotal
+        })),
+        sodas: billSodas.map(soda => ({
+          name: soda.name,
+          quantity: soda.quantity,
+          price: soda.price,
+          subtotal: soda.subtotal
+        })),
+        total: totalAmount,
+        date: new Date(),
+        invoiceType: 'rapida' as const
+      };
+
+      // Imprimir factura automáticamente
+      printInvoice(invoiceData);
+
       clearBill();
       setPaymentDialogOpen(false);
     } catch (error: any) {
@@ -287,10 +312,42 @@ const QuickBilling = () => {
                     </div>
                   </div>
                 </div>
-                <DialogFooter>
-                  <Button onClick={processBill} disabled={isProcessing}>
-                    {isProcessing ? "Procesando..." : "Confirmar Pago"}
-                  </Button>
+                <DialogFooter className="flex justify-between">
+                  <Button variant="outline" onClick={() => setPaymentDialogOpen(false)}>Cancelar</Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        const invoiceData = {
+                          customerName: customerName || undefined,
+                          tableNumber: undefined,
+                          items: billItems.map(item => ({
+                            name: item.name,
+                            quantity: item.quantity,
+                            price: item.price,
+                            subtotal: item.subtotal
+                          })),
+                          sodas: billSodas.map(soda => ({
+                            name: soda.name,
+                            quantity: soda.quantity,
+                            price: soda.price,
+                            subtotal: soda.subtotal
+                          })),
+                          total: getTotalAmount(),
+                          date: new Date(),
+                          invoiceType: 'rapida' as const
+                        };
+                        printInvoice(invoiceData);
+                      }}
+                      disabled={billItems.length === 0 && billSodas.length === 0}
+                    >
+                      <Printer className="w-4 h-4 mr-2" />
+                      Vista Previa
+                    </Button>
+                    <Button onClick={processBill} disabled={isProcessing}>
+                      {isProcessing ? "Procesando..." : "Confirmar Pago"}
+                    </Button>
+                  </div>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
