@@ -132,7 +132,7 @@ export function TableDialog({
               nota: soda.nota || "",
               precioExtra: typeof soda.precioExtra === 'number' ? soda.precioExtra : 0,
               instanceId: soda.instanceId || crypto.randomUUID(), // Asegurar que tenga instanceId
-              tipo_cocina: 'buffet' as 'buffet' | 'cocina adentro' | 'cocina afuera' // Valor por defecto para bebidas
+              tipo_cocina: 'Buffet' as 'Buffet' | 'Cocina_1' | 'Cocina_2' // Valor por defecto para bebidas
             };
           });
           
@@ -207,7 +207,7 @@ export function TableDialog({
     }
   };
 
-  const [selectedKitchen, setSelectedKitchen] = useState<'buffet' | 'cocina adentro' | 'cocina afuera'>('buffet');
+  const [selectedKitchen, setSelectedKitchen] = useState<'Buffet' | 'Cocina_1' | 'Cocina_2'>('Buffet');
 
   const handleAddMenuItem = () => {
     if (!selectedDishId) return;
@@ -264,7 +264,7 @@ export function TableDialog({
         nota: "",
         precioExtra: 0,
         instanceId: sodaInstanceId, // Asignar UUID para la instancia
-        tipo_cocina: 'buffet' // Valor por defecto para bebidas
+        tipo_cocina: 'Buffet' // Valor por defecto para bebidas
       };
       console.log("[DEBUG] Nueva bebida agregada con sodaId:", String(originalSodaId));
       setSelectedSodas([...selectedSodas, newSodaItem]);
@@ -755,6 +755,22 @@ export function TableDialog({
                     value={dishQuantity}
                     onChange={(e) => setDishQuantity(Math.max(1, parseInt(e.target.value) || 1))}
                     className="w-20" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4 mt-2">
+                  <Label className="text-right">Tipo de Cocina</Label>
+                  <Select
+                    value={selectedKitchen}
+                    onValueChange={(value: 'Buffet' | 'Cocina_1' | 'Cocina_2') => setSelectedKitchen(value)}
+                  >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Buffet">Buffet</SelectItem>
+                      <SelectItem value="Cocina_1">Cocina 1</SelectItem>
+                      <SelectItem value="Cocina_2">Cocina 2</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4 mt-2">
                   <Label className="text-right">Complementos</Label>

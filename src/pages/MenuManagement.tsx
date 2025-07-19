@@ -16,7 +16,7 @@ const MenuManagement = () => {
   const [menu, setMenu] = useState<MenuItem[]>([]);
   const [newDishName, setNewDishName] = useState("");
   const [newDishPrice, setNewDishPrice] = useState("");
-  const [selectedKitchen, setSelectedKitchen] = useState<'buffet' | 'cocina adentro' | 'cocina afuera'>('buffet');
+  const [selectedKitchen, setSelectedKitchen] = useState<'Buffet' | 'Cocina_1' | 'Cocina_2'>('Buffet');
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -64,7 +64,7 @@ const MenuManagement = () => {
       setMenu(prev => [...prev, data[0]]);
       setNewDishName("");
       setNewDishPrice("");
-      setSelectedKitchen('buffet');
+      setSelectedKitchen('Buffet');
       setAddDialogOpen(false);
       toast({
         title: "Plato agregado",
@@ -192,15 +192,15 @@ const MenuManagement = () => {
                   </Label>
                   <Select
                     value={selectedKitchen}
-                    onValueChange={(value: 'buffet' | 'cocina adentro' | 'cocina afuera') => setSelectedKitchen(value)}
+                    onValueChange={(value: 'Buffet' | 'Cocina_1' | 'Cocina_2') => setSelectedKitchen(value)}
                   >
                     <SelectTrigger className="col-span-3">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="buffet">Buffet</SelectItem>
-                      <SelectItem value="cocina adentro">Cocina Adentro</SelectItem>
-                      <SelectItem value="cocina afuera">Cocina Afuera</SelectItem>
+                      <SelectItem value="Buffet">Buffet</SelectItem>
+                      <SelectItem value="Cocina_1">Cocina 1</SelectItem>
+                      <SelectItem value="Cocina_2">Cocina 2</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -297,7 +297,7 @@ const MenuManagement = () => {
                   </Label>
                   <Select
                     value={editingItem.tipo_cocina}
-                    onValueChange={(value: 'buffet' | 'cocina adentro' | 'cocina afuera') => 
+                    onValueChange={(value: 'Buffet' | 'Cocina_1' | 'Cocina_2') => 
                       setEditingItem({...editingItem, tipo_cocina: value})
                     }
                   >
@@ -305,9 +305,9 @@ const MenuManagement = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="buffet">Buffet</SelectItem>
-                      <SelectItem value="cocina adentro">Cocina Adentro</SelectItem>
-                      <SelectItem value="cocina afuera">Cocina Afuera</SelectItem>
+                      <SelectItem value="Buffet">Buffet</SelectItem>
+                      <SelectItem value="Cocina_1">Cocina 1</SelectItem>
+                      <SelectItem value="Cocina_2">Cocina 2</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

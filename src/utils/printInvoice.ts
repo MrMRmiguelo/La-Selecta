@@ -61,8 +61,8 @@ export const generateInvoiceHTML = (data: InvoiceData): string => {
         
         body {
           font-family: 'Courier New', monospace;
-          font-size: 10px;
-          line-height: 1.2;
+          font-size: 14px;
+          line-height: 1.3;
           width: 80mm;
           background: white;
           display: block;
@@ -84,7 +84,7 @@ export const generateInvoiceHTML = (data: InvoiceData): string => {
         }
         
         .restaurant-name {
-          font-size: 14px;
+          font-size: 18px;
           font-weight: bold;
           margin-bottom: 2px;
           line-height: 1.1;
@@ -94,8 +94,8 @@ export const generateInvoiceHTML = (data: InvoiceData): string => {
           margin-bottom: 6px;
           border-bottom: 1px dashed #000;
           padding-bottom: 4px;
-          font-size: 9px;
-          line-height: 1.2;
+          font-size: 12px;
+          line-height: 1.3;
         }
         
         .invoice-info div {
@@ -109,15 +109,19 @@ export const generateInvoiceHTML = (data: InvoiceData): string => {
         .section-title {
           font-weight: bold;
           margin-bottom: 3px;
-          font-size: 10px;
+          font-size: 16px;
+          text-align: center;
+          text-decoration: underline;
         }
         
         .item {
           display: flex;
           justify-content: space-between;
-          margin-bottom: 1px;
-          font-size: 9px;
-          line-height: 1.1;
+          margin-bottom: 2px;
+          font-size: 14px;
+          line-height: 1.2;
+          border-bottom: 1px dotted #ccc;
+          padding: 2px 0;
         }
         
         .item-details {
@@ -132,12 +136,12 @@ export const generateInvoiceHTML = (data: InvoiceData): string => {
         }
         
         .item-note {
-          font-size: 8px;
+          font-size: 11px;
           color: #666;
           margin-left: 6px;
           font-style: italic;
           margin-top: 1px;
-          line-height: 1.1;
+          line-height: 1.2;
         }
         
         .total-section {
@@ -147,7 +151,7 @@ export const generateInvoiceHTML = (data: InvoiceData): string => {
         }
         
         .total {
-          font-size: 11px;
+          font-size: 20px;
           font-weight: bold;
           text-align: right;
         }
@@ -157,8 +161,8 @@ export const generateInvoiceHTML = (data: InvoiceData): string => {
           margin-top: 8px;
           border-top: 1px dashed #000;
           padding-top: 4px;
-          font-size: 8px;
-          line-height: 1.1;
+          font-size: 10px;
+          line-height: 1.2;
         }
         
         .footer div {
@@ -182,7 +186,7 @@ export const generateInvoiceHTML = (data: InvoiceData): string => {
             width: 80mm !important;
             height: auto !important;
             min-height: auto !important;
-            font-size: 9px !important;
+            font-size: 16px !important;
             overflow: visible !important;
           }
           
@@ -199,13 +203,13 @@ export const generateInvoiceHTML = (data: InvoiceData): string => {
           }
           
           .restaurant-name {
-            font-size: 12px !important;
+            font-size: 20px !important;
           }
           
           .invoice-info {
             margin-bottom: 4px !important;
             padding-bottom: 3px !important;
-            font-size: 8px !important;
+            font-size: 14px !important;
           }
           
           .items-section {
@@ -213,12 +217,12 @@ export const generateInvoiceHTML = (data: InvoiceData): string => {
           }
           
           .item {
-            font-size: 8px !important;
+            font-size: 14px !important;
             margin-bottom: 0.5px !important;
           }
           
           .item-note {
-            font-size: 7px !important;
+            font-size: 12px !important;
           }
           
           .total-section {
@@ -227,13 +231,13 @@ export const generateInvoiceHTML = (data: InvoiceData): string => {
           }
           
           .total {
-            font-size: 10px !important;
+            font-size: 18px !important;
           }
           
           .footer {
             margin-top: 6px !important;
             padding-top: 3px !important;
-            font-size: 7px !important;
+            font-size: 12px !important;
           }
           
           /* Evitar saltos de página y espacios innecesarios */

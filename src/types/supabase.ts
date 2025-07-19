@@ -9,6 +9,26 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      menu: {
+        Row: {
+          id: number
+          name: string
+          price: number
+          tipo_cocina: Database["public"]["Enums"]["app_rola_menu"]
+        }
+        Insert: {
+          id?: number
+          name: string
+          price: number
+          tipo_cocina?: Database["public"]["Enums"]["app_rola_menu"]
+        }
+        Update: {
+          id?: number
+          name?: string
+          price?: number
+          tipo_cocina?: Database["public"]["Enums"]["app_rola_menu"]
+        }
+      }
       user_roles: {
         Row: {
           user_id: string
@@ -55,6 +75,7 @@ export interface Database {
     }
     Enums: {
       app_role: "admin" | "kitchen" | "user"
+      app_rola_menu: "Buffet" | "Cocina_1" | "Cocina_2"
     }
   }
 }
